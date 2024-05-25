@@ -18,11 +18,11 @@ migrate-make:
 
 migrate-up:
 	@echo $(CLICKHOUSE__DSN)
-	migrate -database $(CLICKHOUSE__DSN) -path $(MIGRATIONS_DIR) up
+	migrate -database $(CLICKHOUSE_MIGRATION_DSN) -path $(MIGRATIONS_DIR) up
 
 migrate-down:
-	migrate -database $(CLICKHOUSE__DSN) -path $(MIGRATIONS_DIR) down
+	migrate -database $(CLICKHOUSE_MIGRATION_DSN) -path $(MIGRATIONS_DIR) down
 
 migrate-force:
 	@read -p "Enter version to force: " vers_; \
-	migrate -database $(CLICKHOUSE__DSN) -path $(MIGRATIONS_DIR) force $$vers_
+	migrate -database $(CLICKHOUSE_MIGRATION_DSN) -path $(MIGRATIONS_DIR) force $$vers_
