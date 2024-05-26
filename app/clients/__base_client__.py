@@ -1,4 +1,4 @@
-import typing
+from typing import Any, Literal
 
 import httpx
 
@@ -18,8 +18,6 @@ from httpx._types import (
     TimeoutTypes,
 )
 
-from app.core.settings import conf
-
 SINGLETON_CLIENT: httpx.AsyncClient | None = None
 
 
@@ -35,7 +33,6 @@ def get_singleton_client() -> httpx.AsyncClient:
                 keepalive_expiry=600,
             ),
             timeout=httpx.Timeout(timeout=7, connect=2),
-            verify=not conf.is_local_env,
         )
     )
 
@@ -43,17 +40,17 @@ def get_singleton_client() -> httpx.AsyncClient:
 class BaseClient:
     """Базовый класс для работы с HTTP-клиентом."""
 
-    base_url = ""
+    _base_url = ""
 
-    async def request(
+    async def _request(
         self,
-        method: typing.Literal["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"],
+        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"],
         path: str,
         *,
         content: RequestContent | None = None,
         data: RequestData | None = None,
         files: RequestFiles | None = None,
-        json: typing.Any | None = None,
+        json: Any | None = None,
         params: QueryParamTypes | None = None,
         headers: HeaderTypes | None = None,
         cookies: CookieTypes | None = None,
@@ -62,28 +59,11 @@ class BaseClient:
         timeout: TimeoutTypes | UseClientDefault = USE_CLIENT_DEFAULT,
         extensions: RequestExtensions | None = None,
     ) -> httpx.Response:
-        """
-        Метод для отправки запроса.
-
-        :param method: Метод запроса
-        :param path: Путь
-        :param content: Тело запроса
-        :param data: Данные запроса
-        :param files: Файлы запроса
-        :param json: JSON запроса
-        :param params: Параметры запроса
-        :param headers: Заголовки запроса
-        :param cookies: Куки запроса
-        :param auth: Аутентификация
-        :param follow_redirects: Следовать за редиректами
-        :param timeout: Таймаут запроса
-        :param extensions: Расширения запроса
-        :return: Ответ от сервера
-        """
+        """Метод для отправки запроса."""
         if get_singleton_client().is_closed:
             raise RuntimeError("Client is closed")
 
-        if not isinstance(self.base_url, str):
+        if not isinstance(self._base_url, str):
             raise ValueError("`base_url` must be a string")
 
         if not path.startswith("/"):
@@ -91,7 +71,7 @@ class BaseClient:
 
         return await get_singleton_client().request(
             method=method,
-            url=f"{self.base_url}{path}",
+            url=f"{self._base_url}{path}",
             content=content,
             data=data,
             files=files,

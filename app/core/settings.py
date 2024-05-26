@@ -25,7 +25,6 @@ class Settings(BaseSettings):
     """Настройки приложения."""
 
     debug: bool = False
-    is_local_env: bool = False
 
     sentry: SentrySettings
     clickhouse: ClickHouseSettings
@@ -35,6 +34,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
+        extra="ignore",
     )
 
 
