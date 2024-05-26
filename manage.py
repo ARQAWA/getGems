@@ -1,5 +1,7 @@
 import click
 
+from app.main import FirstParser, WorkerRunner
+
 
 @click.group()
 def cli() -> None:
@@ -10,9 +12,10 @@ def cli() -> None:
 def run_parser() -> None:
     """Запуск парсера."""
     click.echo("Выполнение команды run-parser")
+    WorkerRunner(FirstParser)
 
 
-def main_run() -> None:
+def __main_run() -> None:
     """Запуск приложения."""
     commands = (run_parser,)
 
@@ -23,4 +26,4 @@ def main_run() -> None:
 
 
 if __name__ == "__main__":
-    main_run()
+    __main_run()
