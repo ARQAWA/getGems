@@ -3,6 +3,7 @@ from typing import TypeVar
 
 import uvloop
 
+from app.core.settings import conf
 from app.workers.base_worker import BaseAsyncWorker
 
 Worker = TypeVar("Worker", bound=BaseAsyncWorker)
@@ -14,7 +15,7 @@ class WorkerRunner:
     def __init__(self, worker: Worker) -> None:
         self._worker = worker
         self._message = f"Запуск воркера {self._worker.__class__.__name__}...\n"
-        uvloop.run(self.__run())
+        (asyncio if conf.is_local_env else uvloop).run(self.__run())
 
     async def __run(self) -> None:
         """Бесконечный цикл для запуска воркера."""

@@ -1,3 +1,4 @@
+from builtins import staticmethod
 from typing import Literal
 
 from orjson import orjson
@@ -78,13 +79,40 @@ class GetGemsClient(BaseClient):
             extensions=COLLECTIONS_EXTENSION_STR,
         )
 
+        if "errors" in response.json:
+            raise RuntimeError("Failed to get top collections " f'{{"errors": {response.json["errors"]}}}')
+
+        counter = {"none_name": 0}
+
         return NftCollectionsResponse(
             collections=[
                 NftCollection(
-                    **col_["collection"],
-                    stat_record=NftCollectionStatRecord(**col_),
+                    address=(collection := col_)["collection"]["address"],
+                    name=(collection_name := self.__get_none_name(collection["collection"]["name"], counter)),
+                    domain=col_["collection"]["domain"],
+                    isVerified=col_["collection"]["isVerified"],
+                    approximateHoldersCount=col_["collection"]["approximateHoldersCount"],
+                    approximateItemsCount=col_["collection"]["approximateItemsCount"],
+                    stat_record=NftCollectionStatRecord(
+                        address=col_["collection"]["address"],
+                        name=collection_name,
+                        period=kind.upper(),  # noqa
+                        place=col_["place"],
+                        diffPercent=col_["diffPercent"],
+                        tonValue=col_["tonValue"],
+                        floorPrice=col_["floorPrice"],
+                        currencyValue=col_["currencyValue"],
+                        currencyFloorPrice=col_["currencyFloorPrice"],
+                    ),
                 )
                 for col_ in response.json["data"]["mainPageTopCollection"]["items"]
             ],
             cursor=response.json["data"]["mainPageTopCollection"]["cursor"],
         )
+
+    @staticmethod
+    def __get_none_name(name: str | None, counter: dict) -> str:
+        if name is not None:
+            return name
+        counter["none_name"] += 1
+        return f'#none_name_{counter["none_name"]:08d}'
