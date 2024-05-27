@@ -564,6 +564,21 @@ dnspython = ">=2.0.0"
 idna = ">=2.0.0"
 
 [[package]]
+name = "fast-depends"
+version = "2.4.3"
+description = "FastDepends - extracted and cleared from HTTP domain logic FastAPI Dependency Injection System. Async and sync are both supported."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "fast_depends-2.4.3-py3-none-any.whl", hash = "sha256:4cf483575b2b7b0a3294fd4ca244698f1bf24d995ea665c3ae79b67e79b1384d"},
+    {file = "fast_depends-2.4.3.tar.gz", hash = "sha256:be39b3d80bf1ee807ccf3e13a5c12a646605e6b2070df0b3f8807b5efb42d34a"},
+]
+
+[package.dependencies]
+anyio = ">=3.0.0,<5.0.0"
+pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<3.0.0"
+
+[[package]]
 name = "fastapi"
 version = "0.111.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -2008,4 +2023,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "11e1d7059a1956efba329bd589d8540fa6b870bc8328ff2e376d3e1477372eb9"
+content-hash = "4d354963f24092ee37a0a2e24354931779549c3c2fec88c3d1227ae1e7bea2b8"

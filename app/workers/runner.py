@@ -5,14 +5,14 @@ import uvloop
 
 from app.workers.base_worker import BaseAsyncWorker
 
-WorkerClass = TypeVar("WorkerClass", bound=type[BaseAsyncWorker])
+Worker = TypeVar("Worker", bound=BaseAsyncWorker)
 
 
 class WorkerRunner:
     """Класс для запуска воркеров."""
 
-    def __init__(self, worker_class: WorkerClass) -> None:
-        self._worker = worker_class()
+    def __init__(self, worker: Worker) -> None:
+        self._worker = worker
         self._message = f"Запуск воркера {self._worker.__class__.__name__}...\n"
         uvloop.run(self.__run())
 

@@ -4,6 +4,9 @@ from orjson import orjson
 
 from app.clients import BaseClient, Response
 
+from .constants import COLLECTIONS_EXTENSION_STR
+from .models import NftCollection, NftCollectionsResponse, NftCollectionStatRecord
+
 
 class GetGemsClient(BaseClient):
     """Клиент сервиса getgems.io."""
@@ -11,10 +14,6 @@ class GetGemsClient(BaseClient):
     _base_url = "https://api.getgems.io"
     _graphql_path = "/graphql"
     _static_header = {"Content-Type": "application/json; charset=utf-8"}
-    _static_extensions_str = (
-        "%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%227"
-        "ad7862e974e6b7b96ca883585fca3a86f64ebf4cf00bec9c2f03a8367dfef75%22%7D%7D"
-    )
 
     async def _graphql(
         self,
@@ -53,3 +52,39 @@ class GetGemsClient(BaseClient):
             )
 
         return response
+
+    async def get_top_collections(
+        self,
+        kind: Literal["day", "week", "month", "all"],
+        count: int = 100,
+        cursor: int | None = None,
+    ) -> NftCollectionsResponse:
+        """
+        Получение топовых коллекций.
+
+        :param kind: Период статистики.
+        :param count: Количество записей.
+        :param cursor: Пагинация.
+        :return: Список коллекций.
+        """
+        variables = {"kind": kind, "count": count}
+        if cursor is not None:
+            variables["cursor"] = cursor
+
+        response = await self._graphql(
+            "GET",
+            "mainPageTopCollection",
+            variables=variables,
+            extensions=COLLECTIONS_EXTENSION_STR,
+        )
+
+        return NftCollectionsResponse(
+            collections=[
+                NftCollection(
+                    **col_["collection"],
+                    stat_record=NftCollectionStatRecord(**col_),
+                )
+                for col_ in response.json["data"]["mainPageTopCollection"]["items"]
+            ],
+            cursor=response.json["data"]["mainPageTopCollection"]["cursor"],
+        )
