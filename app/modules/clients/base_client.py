@@ -95,9 +95,12 @@ class BaseClient:
             extensions=extensions,
         )
 
+        status_code = response.status_code
+        response_text = response.text
+
         return Response(
-            status_code=response.status_code,
-            json=orjson.loads(response.text),
+            status_code=status_code,
+            json=orjson.loads(response_text),
         )
 
     @staticmethod

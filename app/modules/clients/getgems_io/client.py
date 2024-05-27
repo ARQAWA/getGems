@@ -3,7 +3,7 @@ from typing import Literal
 
 from orjson import orjson
 
-from app.clients import BaseClient, Response
+from app.modules.clients import BaseClient, Response
 
 from .constants import COLLECTIONS_EXTENSION_STR
 from .models import NftCollection, NftCollectionsResponse, NftCollectionStatRecord

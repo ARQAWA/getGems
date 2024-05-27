@@ -4,7 +4,7 @@ from typing import TypeVar
 import uvloop
 
 from app.core.settings import conf
-from app.workers.base_worker import BaseAsyncWorker
+from app.modules.workers.base_worker import BaseAsyncWorker
 
 Worker = TypeVar("Worker", bound=BaseAsyncWorker)
 
