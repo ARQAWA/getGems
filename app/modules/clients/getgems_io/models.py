@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StatRecordPeriodEnum(str, Enum):
@@ -28,6 +28,8 @@ class NftCollectionStatRecord(BaseModel):
     usd_value: Decimal = Field(alias="currencyValue", description="USD общая стоимость коллекции")
     usd_floor_price: Decimal = Field(alias="currencyFloorPrice", description="USD минимальная цена")
 
+    model_config = ConfigDict(frozen=True)
+
 
 class NftCollection(BaseModel):
     """Модель NFT коллекции."""
@@ -39,6 +41,8 @@ class NftCollection(BaseModel):
     holders_count: int = Field(alias="approximateHoldersCount", description="Примерное количество держателей")
     items_count: int = Field(alias="approximateItemsCount", description="Примерное количество предметов")
     stat_record: NftCollectionStatRecord = Field(description="Статистика коллекции")
+
+    model_config = ConfigDict(frozen=True)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import httpx
-import orjson
 
 # noinspection PyProtectedMember
 from httpx._client import USE_CLIENT_DEFAULT, UseClientDefault  # noqa: PLC2701
@@ -44,7 +43,7 @@ class Response:
     """DTO ответа от сервиса."""
 
     status_code: int
-    json: Any
+    text: str
 
 
 class BaseClient:
@@ -95,12 +94,9 @@ class BaseClient:
             extensions=extensions,
         )
 
-        status_code = response.status_code
-        response_text = response.text
-
         return Response(
-            status_code=status_code,
-            json=orjson.loads(response_text),
+            status_code=response.status_code,
+            text=response.text,
         )
 
     @staticmethod

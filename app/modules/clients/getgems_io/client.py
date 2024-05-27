@@ -1,4 +1,3 @@
-from builtins import staticmethod
 from typing import Literal
 
 from orjson import orjson
@@ -6,7 +5,8 @@ from orjson import orjson
 from app.modules.clients import BaseClient, Response
 
 from .constants import COLLECTIONS_EXTENSION_STR
-from .models import NftCollection, NftCollectionsResponse, NftCollectionStatRecord
+from .helpers.collections import get_processed_collections
+from .models import NftCollectionsResponse
 
 
 class GetGemsClient(BaseClient):
@@ -45,13 +45,6 @@ class GetGemsClient(BaseClient):
             headers=headers,
         )
 
-        if response.status_code != 200:
-            raise RuntimeError(
-                "Failed to execute GraphQL request "
-                f'{{"code": {response.status_code}, '
-                f'"json_response": {response.json}}}'
-            )
-
         return response
 
     async def get_top_collections(
@@ -79,40 +72,24 @@ class GetGemsClient(BaseClient):
             extensions=COLLECTIONS_EXTENSION_STR,
         )
 
-        if "errors" in response.json:
-            raise RuntimeError("Failed to get top collections " f'{{"errors": {response.json["errors"]}}}')
+        if response.status_code != 200:
+            raise RuntimeError(
+                "Failed to execute GraphQL request "
+                f'{{"code": {response.status_code}, '
+                f'"json_response": {response.text}}}'
+            )
 
-        counter = {"none_name": 0}
+        jres = orjson.loads(response.text)
 
-        return NftCollectionsResponse(
-            collections=[
-                NftCollection(
-                    address=(collection := col_)["collection"]["address"],
-                    name=(collection_name := self.__get_none_name(collection["collection"]["name"], counter)),
-                    domain=col_["collection"]["domain"],
-                    isVerified=col_["collection"]["isVerified"],
-                    approximateHoldersCount=col_["collection"]["approximateHoldersCount"],
-                    approximateItemsCount=col_["collection"]["approximateItemsCount"],
-                    stat_record=NftCollectionStatRecord(
-                        address=col_["collection"]["address"],
-                        name=collection_name,
-                        period=kind.upper(),  # noqa
-                        place=col_["place"],
-                        diffPercent=col_["diffPercent"],
-                        tonValue=col_["tonValue"],
-                        floorPrice=col_["floorPrice"],
-                        currencyValue=col_["currencyValue"],
-                        currencyFloorPrice=col_["currencyFloorPrice"],
-                    ),
-                )
-                for col_ in response.json["data"]["mainPageTopCollection"]["items"]
-            ],
-            cursor=response.json["data"]["mainPageTopCollection"]["cursor"],
+        if "errors" in jres:
+            raise RuntimeError("Failed to get top collections " f'{{"errors": {jres["errors"]}}}')
+
+        collections = await get_processed_collections(
+            jres["data"]["mainPageTopCollection"]["items"],
+            kind,
         )
 
-    @staticmethod
-    def __get_none_name(name: str | None, counter: dict) -> str:
-        if name is not None:
-            return name
-        counter["none_name"] += 1
-        return f'#none_name_{counter["none_name"]:08d}'
+        return NftCollectionsResponse(
+            collections=collections,
+            cursor=jres["data"]["mainPageTopCollection"]["cursor"],
+        )
