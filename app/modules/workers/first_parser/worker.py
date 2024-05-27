@@ -18,12 +18,8 @@ class FirstParser(BaseAsyncWorker):
 
     _cycle_sleeper = 0.5
 
-    _cursors: dict[KindType, int | None] = {
-        "day": None,
-        "week": None,
-        "month": None,
-        "all": None,
-    }
+    _cursors: dict[KindType, int | None] = {"day": None, "week": None, "month": None, "all": None}
+    _cursors_max: dict[KindType, int] = {"day": 0, "week": 0, "month": 0, "all": 0}
 
     def __init__(
         self,
@@ -50,6 +46,7 @@ class FirstParser(BaseAsyncWorker):
                 count=100,
                 cursor=cursor,
             )
+
             asyncio.get_event_loop().run_in_executor(
                 None,
                 print,
@@ -57,5 +54,10 @@ class FirstParser(BaseAsyncWorker):
                 data.cursor,
                 f"Количество коллекций: {len(data.collections)}",
                 cursor,
+                f"   |   Max cursor: {self._cursors_max[kind]}",
             )
+
+            if data.cursor is not None:
+                self._cursors_max[kind] = max(self._cursors_max[kind], int(data.cursor))
+
             self._cursors[kind] = data.cursor

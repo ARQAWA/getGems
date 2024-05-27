@@ -2,7 +2,7 @@ from fast_depends import Depends, inject
 
 from app.modules.clients.getgems_io.client import GetGemsClient
 
-from .parser import FirstParser
+from .worker import FirstParser
 
 
 @inject

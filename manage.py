@@ -1,3 +1,6 @@
+from asyncio import CancelledError
+from contextlib import suppress
+
 import click
 
 from app.main import get_first_parser, run_worker
@@ -25,4 +28,5 @@ def __main_run() -> None:
 
 
 if __name__ == "__main__":
-    __main_run()
+    with suppress(KeyboardInterrupt, CancelledError):
+        __main_run()
