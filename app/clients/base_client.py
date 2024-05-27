@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 from typing import Any, Literal
 
 import httpx
+import orjson
 
 # noinspection PyProtectedMember
 from httpx._client import USE_CLIENT_DEFAULT, UseClientDefault  # noqa: PLC2701
@@ -37,6 +39,14 @@ def get_singleton_client() -> httpx.AsyncClient:
     )
 
 
+@dataclass(frozen=True, slots=True)
+class Response:
+    """DTO ответа от сервиса."""
+
+    status_code: int
+    json: Any
+
+
 class BaseClient:
     """Базовый класс для работы с HTTP-клиентом."""
 
@@ -58,7 +68,7 @@ class BaseClient:
         follow_redirects: bool | UseClientDefault = USE_CLIENT_DEFAULT,
         timeout: TimeoutTypes | UseClientDefault = USE_CLIENT_DEFAULT,
         extensions: RequestExtensions | None = None,
-    ) -> httpx.Response:
+    ) -> Response:
         """Метод для отправки запроса."""
         if get_singleton_client().is_closed:
             raise RuntimeError("Client is closed")
@@ -69,7 +79,7 @@ class BaseClient:
         if not path.startswith("/"):
             path = f"/{path}"
 
-        return await get_singleton_client().request(
+        response = await get_singleton_client().request(
             method=method,
             url=f"{self._base_url}{path}",
             content=content,
@@ -85,10 +95,12 @@ class BaseClient:
             extensions=extensions,
         )
 
+        return Response(
+            status_code=response.status_code,
+            json=orjson.loads(response.text),
+        )
+
     @staticmethod
     async def close() -> None:
         """Закрытие сессии клиента."""
         await get_singleton_client().aclose()
-
-
-__all__ = ("BaseClient",)

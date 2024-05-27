@@ -1,17 +1,8 @@
-from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Literal
 
 from orjson import orjson
 
-from app.clients import BaseClient
-
-
-@dataclass(frozen=True, slots=True)
-class Response:
-    """DTO ответа от сервиса."""
-
-    status_code: int
-    json: Any
+from app.clients import BaseClient, Response
 
 
 class GetGemsClient(BaseClient):
@@ -55,6 +46,10 @@ class GetGemsClient(BaseClient):
         )
 
         if response.status_code != 200:
-            raise RuntimeError("Failed to execute GraphQL request", response.text, response.status_code)
+            raise RuntimeError(
+                "Failed to execute GraphQL request "
+                f'{{"code": {response.status_code}, '
+                f'"json_response": {response.json}}}'
+            )
 
-        return Response(status_code=response.status_code, json=orjson.loads(response.text))
+        return response
