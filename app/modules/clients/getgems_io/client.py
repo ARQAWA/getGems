@@ -74,15 +74,13 @@ class GetGemsClient(BaseClient):
 
         if response.status_code != 200:
             raise RuntimeError(
-                "Failed to execute GraphQL request "
-                f'{{"code": {response.status_code}, '
-                f'"json_response": {response.text}}}'
+                f'Failed to execute GraphQL request {{"code": {response.status_code}, "text": {response.text}}}'
             )
 
         jres = orjson.loads(response.text)
 
         if "errors" in jres:
-            raise RuntimeError("Failed to get top collections " f'{{"errors": {jres["errors"]}}}')
+            raise RuntimeError(f'Failed to get top collections {{"errors": {jres["errors"]}}}')
 
         collections = await get_processed_collections(
             jres["data"]["mainPageTopCollection"]["items"],

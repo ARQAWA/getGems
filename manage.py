@@ -1,6 +1,6 @@
 import click
 
-from app.main import WorkerRunner, get_first_parser
+from app.main import get_first_parser, run_worker
 
 
 @click.group()
@@ -11,7 +11,7 @@ def cli() -> None:
 @click.command(name="run-first-parser", help="Запуск парсера")
 def run_first_parser() -> None:
     """Запуск парсера."""
-    WorkerRunner(get_first_parser())
+    run_worker(get_first_parser())
 
 
 def __main_run() -> None:
