@@ -1,8 +1,8 @@
-from typing import Literal
+from typing import Any, Literal
 
-from orjson import orjson
+import orjson
 
-from app.modules.clients import BaseClient, Response
+from app.core.clients import BaseClient, Response
 
 from .constants import COLLECTIONS_EXTENSION_STR
 from .helpers.collections import get_processed_collections
@@ -20,9 +20,9 @@ class GetGemsClient(BaseClient):
         self,
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"],
         operation_name: str,
-        variables: dict,
-        extensions: dict | str | None = None,
-        headers: dict | None = None,
+        variables: dict[str, Any],
+        extensions: dict[str, Any] | str | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> Response:
         """Выполнение запроса к GraphQL API."""
         headers = headers or {}

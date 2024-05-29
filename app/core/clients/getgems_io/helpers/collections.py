@@ -1,12 +1,13 @@
 import asyncio
+from typing import Any
 
+from app.core.clients.getgems_io.models import NftCollection, NftCollectionStatRecord, StatRecordPeriodEnum
 from app.core.executors import PROCESS_XQTR
-from app.modules.clients.getgems_io.models import NftCollection, NftCollectionStatRecord, StatRecordPeriodEnum
 
 __all__ = ("get_processed_collections",)
 
 
-async def get_processed_collections(input_data: list, kind: str) -> list[NftCollection]:
+async def get_processed_collections(input_data: list[dict[str, Any]], kind: str) -> list[NftCollection]:
     """Получение коллекций."""
     period = StatRecordPeriodEnum(kind.upper())
     data = await asyncio.get_event_loop().run_in_executor(
@@ -39,7 +40,7 @@ async def get_processed_collections(input_data: list, kind: str) -> list[NftColl
     ]
 
 
-def get_prepaired_data(input_data: list) -> tuple:
+def get_prepaired_data(input_data: list[dict[str, Any]]) -> tuple[dict[str, Any], ...]:
     """Вспомогательная функция для подготовки данных."""
     return tuple(
         dict(

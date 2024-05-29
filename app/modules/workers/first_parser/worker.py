@@ -4,7 +4,7 @@ from typing import Literal
 
 import sentry_sdk
 
-from app.modules.clients.getgems_io.client import GetGemsClient
+from app.core.clients.getgems_io.client import GetGemsClient
 from app.modules.workers.base_worker import BaseAsyncWorker
 
 logger = logging.getLogger(__name__)
