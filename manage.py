@@ -3,7 +3,8 @@ from contextlib import suppress
 
 import click
 
-from app.main import get_first_parser, run_worker
+from app.main import get_first_parser
+from app.modules.workers.runner import run_worker
 
 
 @click.group()

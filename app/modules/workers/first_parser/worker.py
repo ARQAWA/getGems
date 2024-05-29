@@ -45,7 +45,7 @@ class FirstParser(BaseAsyncWorker):
             data = await self._get_gems_client.get_top_collections(
                 GetTopCollsParams(
                     kind=kind,
-                    limit=100,
+                    count=100,
                     cursor=cursor,
                 ),
             )

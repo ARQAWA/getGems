@@ -58,10 +58,12 @@ class GetGemsClient(BaseClient):
         :param params: Параметры запроса.
         :return: Список коллекций.
         """
+        variables = params.model_dump(exclude_none=True)
+
         response = await self._graphql(
             "GET",
             "mainPageTopCollection",
-            variables=params.model_dump(exclude_unset=True),
+            variables=variables,
             extensions=COLLECTIONS_EXTENSION_STR,
         )
 
