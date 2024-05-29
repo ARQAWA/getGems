@@ -5,6 +5,7 @@ from typing import Literal
 import sentry_sdk
 
 from app.core.clients.getgems_io.client import GetGemsClient
+from app.core.schemas.get_gems_client import GetTopCollsParams
 from app.modules.workers.base_worker import BaseAsyncWorker
 
 logger = logging.getLogger(__name__)
@@ -42,9 +43,11 @@ class FirstParser(BaseAsyncWorker):
         """Одиночный раунд обработки данных."""
         for kind, cursor in self._cursors.items():
             data = await self._get_gems_client.get_top_collections(
-                kind=kind,
-                count=100,
-                cursor=cursor,
+                GetTopCollsParams(
+                    kind=kind,
+                    limit=100,
+                    cursor=cursor,
+                ),
             )
 
             asyncio.get_event_loop().run_in_executor(

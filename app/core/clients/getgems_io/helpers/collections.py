@@ -1,8 +1,8 @@
 import asyncio
 from typing import Any
 
-from app.core.clients.getgems_io.models import NftCollection, NftCollectionStatRecord, StatRecordPeriodEnum
 from app.core.executors import PROCESS_XQTR
+from app.core.models.nft_collections import NftCollection, NftCollectionStatRecord, StatRecordPeriodEnum
 
 __all__ = ("get_processed_collections",)
 

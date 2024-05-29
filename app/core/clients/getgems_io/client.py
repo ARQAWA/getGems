@@ -3,10 +3,11 @@ from typing import Any, Literal
 import orjson
 
 from app.core.clients import BaseClient, Response
+from app.core.models.nft_collections import NftCollectionsResponse
+from app.core.schemas.get_gems_client import GetTopCollsParams
 
 from .constants import COLLECTIONS_EXTENSION_STR
 from .helpers.collections import get_processed_collections
-from .models import NftCollectionsResponse
 
 
 class GetGemsClient(BaseClient):
@@ -49,26 +50,18 @@ class GetGemsClient(BaseClient):
 
     async def get_top_collections(
         self,
-        kind: Literal["day", "week", "month", "all"],
-        count: int = 100,
-        cursor: int | None = None,
+        params: GetTopCollsParams,
     ) -> NftCollectionsResponse:
         """
         Получение топовых коллекций.
 
-        :param kind: Период статистики.
-        :param count: Количество записей.
-        :param cursor: Пагинация.
+        :param params: Параметры запроса.
         :return: Список коллекций.
         """
-        variables = {"kind": kind, "count": count}
-        if cursor is not None:
-            variables["cursor"] = cursor
-
         response = await self._graphql(
             "GET",
             "mainPageTopCollection",
-            variables=variables,
+            variables=params.model_dump(exclude_unset=True),
             extensions=COLLECTIONS_EXTENSION_STR,
         )
 
@@ -84,7 +77,7 @@ class GetGemsClient(BaseClient):
 
         collections = await get_processed_collections(
             jres["data"]["mainPageTopCollection"]["items"],
-            kind,
+            params.kind,
         )
 
         return NftCollectionsResponse(
