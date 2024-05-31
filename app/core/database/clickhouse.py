@@ -1,16 +1,13 @@
-import contextlib
-
 from aiochclient import ChClient
 
-from app.core.clients.base_client import get_singleton_client
+from app.core.clients.base_client import ASYNC_HTTPX_CLIENT
 from app.core.settings import conf
 
 
-@contextlib.asynccontextmanager
 async def resolve_ch_client() -> ChClient:
     """Зависимость для работы с ClickHouse."""
     client = ChClient(
-        get_singleton_client(),
+        ASYNC_HTTPX_CLIENT,
         url=conf.clickhouse.url,
         user=conf.clickhouse.user,
         password=conf.clickhouse.password,

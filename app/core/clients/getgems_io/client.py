@@ -3,11 +3,10 @@ from typing import Any, Literal
 import orjson
 
 from app.core.clients import BaseClient, Response
+from app.core.clients.getgems_io.constants import COLLECTIONS_EXTENSION_STR
+from app.core.clients.getgems_io.helpers.collections import get_processed_collections
 from app.core.models.nft_collections import NftCollectionsResponse
 from app.core.schemas.get_gems_client import GetTopCollsParams
-
-from .constants import COLLECTIONS_EXTENSION_STR
-from .helpers.collections import get_processed_collections
 
 
 class GetGemsClient(BaseClient):

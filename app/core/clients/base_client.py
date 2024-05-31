@@ -19,15 +19,12 @@ from httpx._types import (
     TimeoutTypes,
 )
 
-SINGLETON_CLIENT: httpx.AsyncClient | None = None
 
+class AsyncSingleClient(httpx.AsyncClient):
+    """Класс для работы с одним клиентом."""
 
-def get_singleton_client() -> httpx.AsyncClient:
-    """Получение синглтон-клиента."""
-    global SINGLETON_CLIENT
-
-    return SINGLETON_CLIENT or (
-        SINGLETON_CLIENT := httpx.AsyncClient(
+    def __init__(self) -> None:
+        super().__init__(
             limits=httpx.Limits(
                 max_connections=100,
                 max_keepalive_connections=70,
@@ -35,7 +32,16 @@ def get_singleton_client() -> httpx.AsyncClient:
             ),
             timeout=httpx.Timeout(timeout=7, connect=2),
         )
-    )
+
+    async def aclose(self) -> None:
+        """Закрытие сессии клиента."""
+
+    async def complete_close(self) -> None:
+        """Закрытие сессии клиента."""
+        await super().aclose()
+
+
+ASYNC_HTTPX_CLIENT = AsyncSingleClient()
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,7 +75,7 @@ class BaseClient:
         extensions: RequestExtensions | None = None,
     ) -> Response:
         """Метод для отправки запроса."""
-        if get_singleton_client().is_closed:
+        if ASYNC_HTTPX_CLIENT.is_closed:
             raise RuntimeError("Client is closed")
 
         if not isinstance(self._base_url, str):
@@ -78,7 +84,7 @@ class BaseClient:
         if not path.startswith("/"):
             path = f"/{path}"
 
-        response = await get_singleton_client().request(
+        response = await ASYNC_HTTPX_CLIENT.request(
             method=method,
             url=f"{self._base_url}{path}",
             content=content,
@@ -102,7 +108,7 @@ class BaseClient:
     @staticmethod
     async def close() -> None:
         """Закрытие сессии клиента."""
-        await get_singleton_client().aclose()
+        await ASYNC_HTTPX_CLIENT.complete_close()
 
 
-__all__ = ["BaseClient", "Response", "get_singleton_client"]
+__all__ = ["BaseClient", "Response", "ASYNC_HTTPX_CLIENT"]

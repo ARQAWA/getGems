@@ -1,15 +1,15 @@
 import asyncio
 import logging
-from typing import Literal
+from typing import Annotated, Literal
 
 import sentry_sdk
+from fast_depends import Depends, inject
 
 from app.core.dependnecies import ChClient, GetGemsClient
 from app.core.schemas.get_gems_client import GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
 
 logger = logging.getLogger(__name__)
-
 
 KindType = Literal["day", "week", "month", "all"]
 
@@ -18,6 +18,16 @@ class FirstParser(BaseAsyncWorker):
     """Класс для парсинга данных."""
 
     _cycle_sleeper = 0.5
+
+    @staticmethod
+    async def _run() -> None:
+        """Запуск воркера."""
+
+        @inject
+        async def _dep(instance: "Annotated[FirstParser, Depends(FirstParser)]") -> None:
+            await instance.start()
+
+        await _dep()  # type: ignore
 
     _cursors: dict[KindType, int | None] = {"day": None, "week": None, "month": None, "all": None}
     _cursors_max: dict[KindType, int] = {"day": 0, "week": 0, "month": 0, "all": 0}
@@ -32,7 +42,7 @@ class FirstParser(BaseAsyncWorker):
         self._ch_client = ch_client
         self._get_gems_client = get_gems_client
 
-    async def main(self) -> None:
+    async def _main(self) -> None:
         """Запуск парсера."""
         # nft_col = NFTCollection(
         #     address="0xasdsd",

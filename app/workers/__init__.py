@@ -1,4 +1,3 @@
-from .base_worker import TAsyncWorker
-from .runner import run_worker
+from app.workers.base_worker import TAsyncWorker
 
-__all__ = ["TAsyncWorker", "run_worker"]
+__all__ = ["TAsyncWorker"]

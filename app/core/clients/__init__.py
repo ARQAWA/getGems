@@ -1,3 +1,3 @@
-from .base_client import BaseClient, Response
+from app.core.clients.base_client import BaseClient, Response
 
 __all__ = ["BaseClient", "Response"]

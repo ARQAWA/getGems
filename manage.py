@@ -3,8 +3,7 @@ from contextlib import suppress
 
 import click
 
-from app.main import get_first_parser
-from app.modules.workers.runner import run_worker
+from app.main import FirstParser
 
 
 @click.group()
@@ -15,7 +14,7 @@ def cli() -> None:
 @click.command(name="run-first-parser", help="Запуск парсера")
 def run_first_parser() -> None:
     """Запуск парсера."""
-    run_worker(get_first_parser())
+    FirstParser.bootstrap()
 
 
 def __main_run() -> None:

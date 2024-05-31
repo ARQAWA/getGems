@@ -7,4 +7,4 @@ from app.core.clients.getgems_io.client import GetGemsClient as GetGemsClientOri
 from app.core.database.clickhouse import resolve_ch_client
 
 GetGemsClient = Annotated[GetGemsClientOrigin, Depends(GetGemsClientOrigin)]
-ChClient = Annotated[ChClientOrigin, resolve_ch_client]
+ChClient = Annotated[ChClientOrigin, Depends(resolve_ch_client)]
