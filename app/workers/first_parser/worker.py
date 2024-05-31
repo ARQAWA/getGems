@@ -4,7 +4,7 @@ from typing import Literal
 
 import sentry_sdk
 
-from app.core.clients.getgems_io.client import GetGemsClient
+from app.core.dependnecies import ChClient, GetGemsClient
 from app.core.schemas.get_gems_client import GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
 
@@ -24,10 +24,12 @@ class FirstParser(BaseAsyncWorker):
 
     def __init__(
         self,
+        ch_client: ChClient,
         get_gems_client: GetGemsClient,
     ) -> None:
         super().__init__()
         self._cycle_sleeper = 0.5
+        self._ch_client = ch_client
         self._get_gems_client = get_gems_client
 
     async def main(self) -> None:
