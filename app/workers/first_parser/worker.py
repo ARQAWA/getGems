@@ -44,21 +44,16 @@ class FirstParser(BaseAsyncWorker):
 
     async def _main(self) -> None:
         """Запуск парсера."""
-        # nft_col = NFTCollection(
-        #     address="0xasdsd",
-        #     name="name",
-        #     domain="domain",
-        #     is_verified=True,
-        #     holders_count=10,
-        #     items_count=10,
-        # )
-        #
-        # session.add(nft_col)
-        # await asyncio.get_event_loop().run_in_executor(
-        #     None,
-        #     session.commit(),
-        # )
-        #
+
+        while True:
+            res = await self._ch_client.fetchval(
+                "SELECT COUNT(address) FROM nft_collection",
+            )
+
+            print(f"Количество коллекций в базе `nft_collection`: {res}")
+
+            await asyncio.sleep(3)
+
         try:
             await self._single_round()
         except Exception as err:
