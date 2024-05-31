@@ -29,8 +29,8 @@ def get_singleton_client() -> httpx.AsyncClient:
     return SINGLETON_CLIENT or (
         SINGLETON_CLIENT := httpx.AsyncClient(
             limits=httpx.Limits(
-                max_connections=10,
-                max_keepalive_connections=5,
+                max_connections=100,
+                max_keepalive_connections=70,
                 keepalive_expiry=600,
             ),
             timeout=httpx.Timeout(timeout=7, connect=2),
@@ -103,3 +103,6 @@ class BaseClient:
     async def close() -> None:
         """Закрытие сессии клиента."""
         await get_singleton_client().aclose()
+
+
+__all__ = ["BaseClient", "Response", "get_singleton_client"]

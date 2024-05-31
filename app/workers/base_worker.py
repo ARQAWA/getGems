@@ -5,10 +5,7 @@ from typing import Never, TypeVar
 
 import sentry_sdk
 
-__all__ = (
-    "BaseAsyncWorker",
-    "TAsyncWorker",
-)
+__all__ = ["BaseAsyncWorker", "TAsyncWorker"]
 
 logger = logging.getLogger(__name__)
 TAsyncWorker = TypeVar("TAsyncWorker", bound="BaseAsyncWorker")

@@ -7,4 +7,4 @@ FOR_FETCH_Q: Queue[GetTopCollsParams] = Queue()
 FOR_CH_INSERT_Q: Queue[NftCollection] = Queue()
 
 
-__all__ = ("FOR_FETCH_Q", "FOR_CH_INSERT_Q")
+__all__ = ["FOR_FETCH_Q", "FOR_CH_INSERT_Q"]

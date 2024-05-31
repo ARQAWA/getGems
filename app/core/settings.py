@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,14 +11,10 @@ class SentrySettings(BaseModel):
 class ClickHouseSettings(BaseModel):
     """Настройки ClickHouse."""
 
-    dsn: str
-
-    @field_validator("dsn", mode="before")
-    def check_dsn(cls, value: str) -> str:
-        """Проверка DSN."""
-        if not value.startswith("clickhouse://"):
-            raise ValueError("DSN должен начинаться с clickhouse://")
-        return value.replace("clickhouse://", "clickhouse+native://")
+    url: str
+    user: str
+    password: str
+    database: str
 
 
 class Settings(BaseSettings):

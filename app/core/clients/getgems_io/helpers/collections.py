@@ -4,7 +4,7 @@ from typing import Any
 from app.core.executors import PROCESS_XQTR
 from app.core.models.nft_collections import NftCollection, NftCollectionStatRecord, StatRecordPeriodEnum
 
-__all__ = ("get_processed_collections",)
+__all__ = ["get_processed_collections"]
 
 
 async def get_processed_collections(input_data: list[dict[str, Any]], kind: str) -> list[NftCollection]:
