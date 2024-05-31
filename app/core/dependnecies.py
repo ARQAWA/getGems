@@ -1,10 +1,12 @@
 from typing import Annotated
 
-from aiochclient import ChClient as ChClientOrigin
+from asynch.cursors import Cursor as CursorOrigin
 from fast_depends import Depends
 
 from app.core.clients.getgems_io.client import GetGemsClient as GetGemsClientOrigin
-from app.core.database.clickhouse import resolve_ch_client
+from app.core.database.clickhouse import resolve_ch_cursor
 
 GetGemsClient = Annotated[GetGemsClientOrigin, Depends(GetGemsClientOrigin)]
-ChClient = Annotated[ChClientOrigin, Depends(resolve_ch_client)]
+ChCursor = Annotated[CursorOrigin, Depends(resolve_ch_cursor)]
+
+__all__ = ["GetGemsClient", "ChCursor"]

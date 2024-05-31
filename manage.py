@@ -28,5 +28,5 @@ def __main_run() -> None:
 
 
 if __name__ == "__main__":
-    with suppress(KeyboardInterrupt, CancelledError):
+    with suppress(KeyboardInterrupt, SystemExit, CancelledError):
         __main_run()

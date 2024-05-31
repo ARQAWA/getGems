@@ -1,7 +1,9 @@
+from asyncio import CancelledError
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, AsyncGenerator, Literal
 
 import httpx
+from fast_depends import Depends
 
 # noinspection PyProtectedMember
 from httpx._client import USE_CLIENT_DEFAULT, UseClientDefault  # noqa: PLC2701
@@ -19,12 +21,15 @@ from httpx._types import (
     TimeoutTypes,
 )
 
+HTTPX_CLIENT: httpx.AsyncClient | None = None
 
-class AsyncSingleClient(httpx.AsyncClient):
-    """Класс для работы с одним клиентом."""
 
-    def __init__(self) -> None:
-        super().__init__(
+async def resolve_httpx_client() -> AsyncGenerator[httpx.AsyncClient, None]:
+    """Зависимость для работы с AsyncClient."""
+    global HTTPX_CLIENT
+
+    if HTTPX_CLIENT is None:
+        HTTPX_CLIENT = httpx.AsyncClient(
             limits=httpx.Limits(
                 max_connections=100,
                 max_keepalive_connections=70,
@@ -33,15 +38,11 @@ class AsyncSingleClient(httpx.AsyncClient):
             timeout=httpx.Timeout(timeout=7, connect=2),
         )
 
-    async def aclose(self) -> None:
-        """Закрытие сессии клиента."""
-
-    async def complete_close(self) -> None:
-        """Закрытие сессии клиента."""
-        await super().aclose()
-
-
-ASYNC_HTTPX_CLIENT = AsyncSingleClient()
+    try:
+        yield HTTPX_CLIENT
+    except (KeyboardInterrupt, SystemExit, CancelledError) as exc:
+        await HTTPX_CLIENT.aclose()
+        raise exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +57,9 @@ class BaseClient:
     """Базовый класс для работы с HTTP-клиентом."""
 
     _base_url = ""
+
+    def __init__(self, httpx_client: httpx.AsyncClient = Depends(resolve_httpx_client)) -> None:
+        self._httpx_client = httpx_client
 
     async def _request(
         self,
@@ -75,7 +79,7 @@ class BaseClient:
         extensions: RequestExtensions | None = None,
     ) -> Response:
         """Метод для отправки запроса."""
-        if ASYNC_HTTPX_CLIENT.is_closed:
+        if self._httpx_client.is_closed:
             raise RuntimeError("Client is closed")
 
         if not isinstance(self._base_url, str):
@@ -84,7 +88,7 @@ class BaseClient:
         if not path.startswith("/"):
             path = f"/{path}"
 
-        response = await ASYNC_HTTPX_CLIENT.request(
+        response = await self._httpx_client.request(
             method=method,
             url=f"{self._base_url}{path}",
             content=content,
@@ -105,10 +109,5 @@ class BaseClient:
             text=response.text,
         )
 
-    @staticmethod
-    async def close() -> None:
-        """Закрытие сессии клиента."""
-        await ASYNC_HTTPX_CLIENT.complete_close()
 
-
-__all__ = ["BaseClient", "Response", "ASYNC_HTTPX_CLIENT"]
+__all__ = ["BaseClient", "Response"]

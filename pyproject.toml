@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-aiochclient = {extras = ["httpx-speedups"], version = "^2.6.0"}
+asynch = {extras = ["compression"], version = "^0.2.3"}
 click = "^8.1.7"
 fast-depends = "^2.4.3"
 httpx = "^0.27.0"
@@ -44,7 +44,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["I", "ANN", "D", "F", "E", "W", "N", "C90", "PL", "T20", "SLF", "SIM", "TID", "TCH", "PERF", "FURB"]
-ignore = ["D100", "D104", "D107", "D203", "D212", "D401", "F403", "N805", "ANN101", "ANN102", "ANN401", "PLR"]
+ignore = [
+    "D100", "D104", "D107", "D203", "D212", "D401", "F403",
+    "N805", "ANN101", "ANN102", "ANN401", "PLR", "PLW0603",
+]
 fixable = ["ALL"]
 unfixable = []
 dummy-variable-rgx = "(?x)(^venv/ | ^venv\\.py$)"

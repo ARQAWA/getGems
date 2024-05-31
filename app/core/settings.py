@@ -11,10 +11,13 @@ class SentrySettings(BaseModel):
 class ClickHouseSettings(BaseModel):
     """Настройки ClickHouse."""
 
-    url: str
+    host: str
+    port: int
     user: str
     password: str
     database: str
+    pool_min_size: int = 1
+    pool_max_size: int = 50
 
 
 class Settings(BaseSettings):
