@@ -6,7 +6,7 @@ import sentry_sdk
 
 from app.core.clients.getgems_io.client import GetGemsClient
 from app.core.schemas.get_gems_client import GetTopCollsParams
-from app.modules.workers.base_worker import BaseAsyncWorker
+from app.workers.base_worker import BaseAsyncWorker
 
 logger = logging.getLogger(__name__)
 
