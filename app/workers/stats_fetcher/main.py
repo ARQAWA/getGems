@@ -1,45 +1,36 @@
+import asyncio
 import logging
 
-from app.core.clients.getgems_io.client import GetGemsClient
-from app.core.queues import QUEUE_FOR_FETCH
-from app.core.schemas.get_gems_client import FetchTopCollsRequest, GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
+from app.workers.stats_fetcher.fetcher import StatsFetcherFetcher
+from app.workers.stats_fetcher.scheduler import StatsFetcherScheduler
 
 logger = logging.getLogger(__name__)
 
 
-class StatsFetcher(BaseAsyncWorker):
+class StatsFetcherMain(BaseAsyncWorker):
     """Класс для парсинга данных."""
 
-    def __init__(
-        self,
-        get_gems_client: GetGemsClient,
-    ) -> None:
-        self._get_gems_client = get_gems_client
-
-    _cycle_sleeper = 0
+    _cycle_sleeper = 999
 
     async def startup(self) -> None:
         """Код, который выполняется при старте воркера."""
+        self._run_workers()
 
     async def main(self) -> None:
         """Код воркеа."""
-        while True:
-            await self._execute_pipeline(
-                await QUEUE_FOR_FETCH.get(),
-            )
 
-    async def _execute_pipeline(self, fetch_req: FetchTopCollsRequest) -> None:
+    @staticmethod
+    def _run_workers() -> None:
         """
-        Выкачиваем данные GetGems коллекции.
+        Запуск воркеров.
 
-        1. Отправляем запрос на сервер GetGems
-        2. Проверяем курсор и длинну полученных данных
-        3. Если данные есть, отправляем в очередь следующий запрос
-        4. Отправляем данные в очередь для обработки
+        1. Запускаем воркер для скачивания данных.
+        2. Запускаем воркер плаанировщик.
         """
-        self._get_gems_client.get_top_collections(
-            GetTopCollsParams(*FetchTopCollsRequest),
-        )
-        await self._fetch_data(fetch_req)
-        logger.info(f"Finish fetching data for {fetch_req}")
+        event_loop = asyncio.get_event_loop()
+
+        for _ in range(10):
+            StatsFetcherFetcher.background(event_loop)
+
+        StatsFetcherScheduler.background(event_loop)

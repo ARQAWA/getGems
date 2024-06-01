@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypedDict
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, PlainSerializer
 
@@ -42,4 +42,35 @@ class GetTopCollsParams(BaseModel):
         )
 
 
-__all__ = ["GetTopCollsParams", "KindStr", "FetchTopCollsRequest"]
+class TopCollInfoItem(TypedDict):
+    """Модель элемента топ коллекции."""
+
+    address: str
+    name: str
+    domain: str | None
+    isVerified: bool | None
+    approximateHoldersCount: int
+    approximateItemsCount: int
+
+
+class TopCollStatItem(TypedDict):
+    """Модель элемента топ коллекции."""
+
+    place: int
+    tonValue: str
+    currencyValue: float
+    diffPercent: float
+    floorPrice: int
+    currencyFloorPrice: float
+    collection: TopCollInfoItem
+
+
+class ResponseTopColls(TypedDict):
+    """Модель ответа топ коллекций."""
+
+    items: list[TopCollStatItem]
+    cursor: str
+    period: KindStr
+
+
+__all__ = ["GetTopCollsParams", "KindStr", "FetchTopCollsRequest", "ResponseTopColls"]

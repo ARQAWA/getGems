@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -10,9 +9,6 @@ from app.workers.base_worker import BaseAsyncWorker
 
 if TYPE_CHECKING:
     from app.core.schemas.get_gems_client import KindStr
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 CONST_22_MINUTES = 22 * TIME_MINUTE
 
@@ -76,5 +72,5 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         sleeper = (datetime.now(UTC) - last_updated).total_seconds() % TIME_HOUR
 
         if sleeper < CONST_22_MINUTES:
-            logger.info(f"StatsFetcherScheduler: start in {sleeper} seconds")
+            print(f"StatsFetcherScheduler: start in {sleeper} seconds")  # noqa
             await asyncio.sleep(sleeper)

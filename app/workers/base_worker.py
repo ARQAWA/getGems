@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Never, TypeVar
+from typing import Any, Never, TypeVar
 
 import sentry_sdk
 
@@ -14,7 +14,8 @@ from fast_depends import Depends, inject
 from app.core._libs import LibsContainer
 from app.core.settings import conf
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+INJECT_LOCK = asyncio.Lock()
 TAsyncWorker = TypeVar("TAsyncWorker", bound="BaseAsyncWorker")
 
 
@@ -42,7 +43,7 @@ class BaseAsyncWorker(ABC):
                 if self._cycle_sleeper > 0:
                     await asyncio.sleep(self._cycle_sleeper)
             except Exception as exc:
-                logger.error(f"Failed to run worker!\n{repr(exc)}\nRestarting in 30 seconds...")
+                LOGGER.error(f"Failed to run worker!\n{repr(exc)}\nRestarting in 30 seconds...")
                 sentry_sdk.capture_exception(exc)
                 await asyncio.sleep(30)
 
@@ -51,10 +52,13 @@ class BaseAsyncWorker(ABC):
         """Запуск воркера - внутренний интерфейс."""
 
         @inject
-        async def _dep(instance: "BaseAsyncWorker" = Depends(cls)) -> None:
-            await getattr(instance, "_start")()
+        async def _get_start_coro(instance: "BaseAsyncWorker" = Depends(cls)) -> Any:
+            return getattr(instance, "_start")()
 
-        await _dep()
+        async with INJECT_LOCK:
+            start_coro = await _get_start_coro()
+
+        await start_coro
 
     @classmethod
     def bootstrap(cls) -> None:
@@ -75,6 +79,6 @@ class BaseAsyncWorker(ABC):
             event_loop.close()
 
     @classmethod
-    def background(cls) -> None:
+    def background(cls, event_loop: asyncio.AbstractEventLoop) -> None:
         """Запуск воркера в фоне - внешний интерфейс."""
-        asyncio.get_event_loop().create_task(cls._run())  # noqa
+        event_loop.create_task(cls._run())  # noqa
