@@ -1,10 +1,5 @@
-from asyncio import CancelledError
 from dataclasses import dataclass
-from typing import Annotated, Any, AsyncGenerator, Literal
-
-from fast_depends import Depends
-from httpx import AsyncClient as AsyncClientOrigin
-from httpx import Limits, Timeout
+from typing import Any, Literal
 
 # noinspection PyProtectedMember
 from httpx._client import USE_CLIENT_DEFAULT, UseClientDefault  # noqa: PLC2701
@@ -22,31 +17,8 @@ from httpx._types import (
     TimeoutTypes,
 )
 
-HTTPX_CLIENT: AsyncClientOrigin | None = None
-
-
-async def resolve_httpx_client() -> AsyncGenerator[AsyncClientOrigin, None]:
-    """Зависимость для работы с AsyncClient."""
-    global HTTPX_CLIENT
-
-    if HTTPX_CLIENT is None:
-        HTTPX_CLIENT = AsyncClientOrigin(
-            limits=Limits(
-                max_connections=100,
-                max_keepalive_connections=70,
-                keepalive_expiry=600,
-            ),
-            timeout=Timeout(timeout=7, connect=2),
-        )
-
-    try:
-        yield HTTPX_CLIENT
-    except (KeyboardInterrupt, SystemExit, CancelledError) as exc:
-        await HTTPX_CLIENT.aclose()
-        raise exc
-
-
-AsyncClient = Annotated[AsyncClientOrigin, Depends(resolve_httpx_client)]
+# noinspection PyProtectedMember
+from app.core._libs.httpx_client import HttpxCl
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,8 +34,8 @@ class BaseClient:
 
     _base_url = ""
 
-    def __init__(self, httpx_client: AsyncClient) -> None:
-        self._httpx_client = httpx_client
+    def __init__(self) -> None:
+        self._httpx_client = HttpxCl.instance()
 
     async def _request(
         self,

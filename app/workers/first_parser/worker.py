@@ -5,7 +5,6 @@ from typing import Literal
 
 from app.core.clients.getgems_io.client import GetGemsClient
 from app.core.repositories.nft_collection_stats import NftCollectionStatsRepo
-from app.core.schemas.get_gems_client import GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
 
 logger = logging.getLogger(__name__)
@@ -43,26 +42,26 @@ class FirstParser(BaseAsyncWorker):
                 print(f"Next hour: {next_hour}, now: {datetime.now(UTC)}")  # noqa
                 await asyncio.sleep(1)
 
-        for kind, cursor in self._cursors.items():
-            data = await self._get_gems_client.get_top_collections(
-                GetTopCollsParams(
-                    kind=kind,
-                    count=100,
-                    cursor=cursor,
-                ),
-            )
-
-            asyncio.get_event_loop().run_in_executor(
-                None,
-                print,
-                kind,
-                data.cursor,
-                f"Количество коллекций: {len(data.collections)}",
-                cursor,
-                f"   |   Max cursor: {self._cursors_max[kind]}",
-            )
-
-            if data.cursor is not None:
-                self._cursors_max[kind] = max(self._cursors_max[kind], int(data.cursor))
-
-            self._cursors[kind] = data.cursor
+        # for kind, cursor in self._cursors.items():
+        #     data = await self._get_gems_client.get_top_collections(
+        #         GetTopCollsParams(
+        #             kind=kind,
+        #             count=100,
+        #             cursor=cursor,
+        #         ),
+        #     )
+        #
+        #     asyncio.get_event_loop().run_in_executor(
+        #         None,
+        #         print,
+        #         kind,
+        #         data.cursor,
+        #         f"Количество коллекций: {len(data.collections)}",
+        #         cursor,
+        #         f"   |   Max cursor: {self._cursors_max[kind]}",
+        #     )
+        #
+        #     if data.cursor is not None:
+        #         self._cursors_max[kind] = max(self._cursors_max[kind], int(data.cursor))
+        #
+        #     self._cursors[kind] = data.cursor
