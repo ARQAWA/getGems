@@ -1,0 +1,7 @@
+# Константы для удобства работы с временем
+TIME_SECOND = 1
+TIME_MINUTE = 60 * TIME_SECOND
+TIME_HOUR = 60 * TIME_MINUTE
+TIME_DAY = 24 * TIME_HOUR
+TIME_WEEK = 7 * TIME_DAY
+TIME_MONTH = 30 * TIME_DAY

@@ -1,10 +1,10 @@
 from asyncio import Queue
 
 from app.core.models.nft_collections import NftCollection
-from app.core.schemas.get_gems_client import GetTopCollsParams
+from app.core.schemas.get_gems_client import FetchTopCollsRequest
 
-FOR_FETCH_Q: Queue[GetTopCollsParams] = Queue()
-FOR_CH_INSERT_Q: Queue[NftCollection] = Queue()
+QUEUE_FOR_FETCH: Queue[FetchTopCollsRequest] = Queue()
+QUEUE_FOR_CH_INSERT: Queue[NftCollection] = Queue()
 
 
-__all__ = ["FOR_FETCH_Q", "FOR_CH_INSERT_Q"]
+__all__ = ["QUEUE_FOR_FETCH", "QUEUE_FOR_CH_INSERT"]

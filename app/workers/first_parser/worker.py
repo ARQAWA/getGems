@@ -28,6 +28,10 @@ class FirstParser(BaseAsyncWorker):
         self._get_gems_client = get_gems_client
         self._nft_collection_stats_repo = nft_collection_stats_repo
 
+    async def startup(self) -> None:
+        """Код, который выполняется при старте воркера."""
+        pass
+
     async def main(self) -> None:
         """Код воркеа."""
         while True:
