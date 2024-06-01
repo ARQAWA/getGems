@@ -31,7 +31,8 @@ class BaseAsyncWorker(ABC):
         while True:
             try:
                 await self.main()
-                await asyncio.sleep(self._cycle_sleeper)
+                if self._cycle_sleeper > 0:
+                    await asyncio.sleep(self._cycle_sleeper)
             except Exception as exc:
                 logger.error(f"Failed to run worker!\n{repr(exc)}\nRestarting in 30 seconds...")
                 sentry_sdk.capture_exception(exc)
@@ -51,3 +52,8 @@ class BaseAsyncWorker(ABC):
     def bootstrap(cls) -> None:
         """Запуск воркера - внешний интерфейс."""
         (asyncio if conf.is_local_env else uvloop).run(cls._run())
+
+    @classmethod
+    async def background(cls) -> None:
+        """Запуск воркера в фоне - внешний интерфейс."""
+        asyncio.create_task(cls._run())  # noqa

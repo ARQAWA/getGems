@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS nft_collection_stat_record;
+DROP TABLE IF EXISTS nft_collection_stat;

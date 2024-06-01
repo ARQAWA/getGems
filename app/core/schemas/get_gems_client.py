@@ -8,6 +8,7 @@ def int_to_str(value: int) -> str:
     return str(value)
 
 
+KindStr = Literal["day", "week", "month", "all"]
 CountInt = Annotated[
     int,
     Field(strict=True, ge=0, le=100),
@@ -24,6 +25,9 @@ CursorInt = Annotated[
 class GetTopCollsParams(BaseModel):
     """Модель параметров запроса топ коллекций."""
 
-    kind: Literal["day", "week", "month", "all"]
+    kind: KindStr
     count: CountInt = 100
     cursor: CursorInt | None = None
+
+
+__all__ = ["GetTopCollsParams", "KindStr"]

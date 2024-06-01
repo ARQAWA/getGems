@@ -24,8 +24,6 @@ class FirstParser(BaseAsyncWorker):
         ch_cursor: ChCursor,
         get_gems_client: GetGemsClient,
     ) -> None:
-        super().__init__()
-        self._cycle_sleeper = 0.5
         self._ch_cursor = ch_cursor
         self._get_gems_client = get_gems_client
 
