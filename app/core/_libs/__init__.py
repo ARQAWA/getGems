@@ -3,6 +3,14 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Coroutine, Generic, TypeVar
 
+
+class NotInstantiated:
+    """Класс для запрета инстанцирования."""
+
+    def __init__(self) -> None:
+        raise RuntimeError("Class cannot be instantiated.")
+
+
 TLib = TypeVar("TLib")
 
 
@@ -13,7 +21,7 @@ class TypeCapsule(Generic[TLib]):
     cls: type[TLib]
 
 
-class ObjectCapsule(Generic[TLib]):
+class ObjectCapsule(Generic[TLib], NotInstantiated):
     """Капсула объекта."""
 
     _instance: TLib | None = None
@@ -57,7 +65,7 @@ class ObjectCapsule(Generic[TLib]):
             await cls._close()
 
 
-class LibsContainer(Generic[TLib]):
+class LibsContainer(Generic[TLib], NotInstantiated):
     """Контейнер для регистрации инстансов."""
 
     _registry: dict[TypeCapsule[TLib], Coroutine[None, None, None]] = {}

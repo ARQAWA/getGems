@@ -24,12 +24,18 @@ class BaseAsyncWorker(ABC):
     _cycle_sleeper = 0.5
 
     @abstractmethod
+    async def startup(self) -> None:
+        """Код, который выполняется при старте воркера."""
+        raise NotImplementedError
+
+    @abstractmethod
     async def main(self) -> None:
         """Точка входа для воркера."""
         raise NotImplementedError
 
     async def _start(self) -> Never:
         """Запуск воркера - основной цикл."""
+        await self.startup()
         while True:
             try:
                 await self.main()
@@ -69,6 +75,6 @@ class BaseAsyncWorker(ABC):
             event_loop.close()
 
     @classmethod
-    async def background(cls) -> None:
+    def background(cls) -> None:
         """Запуск воркера в фоне - внешний интерфейс."""
         asyncio.get_event_loop().create_task(cls._run())  # noqa
