@@ -8,7 +8,6 @@ class HttpxCl(ObjectCapsule[AsyncClient]):
 
     @staticmethod
     def _init() -> AsyncClient:
-        """Инициализация ресурсов."""
         return AsyncClient(
             limits=Limits(
                 max_connections=100,
@@ -23,5 +22,4 @@ class HttpxCl(ObjectCapsule[AsyncClient]):
 
     @classmethod
     async def _close(cls) -> None:
-        """Закрытие ресурсов."""
         await cls._instance.aclose()  # type: ignore

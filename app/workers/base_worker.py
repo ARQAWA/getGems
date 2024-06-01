@@ -10,6 +10,8 @@ __all__ = ["BaseAsyncWorker", "TAsyncWorker"]
 import uvloop
 from fast_depends import Depends, inject
 
+# noinspection PyProtectedMember
+from app.core._libs import LibsContainer
 from app.core.settings import conf
 
 logger = logging.getLogger(__name__)
@@ -51,9 +53,22 @@ class BaseAsyncWorker(ABC):
     @classmethod
     def bootstrap(cls) -> None:
         """Запуск воркера - внешний интерфейс."""
-        (asyncio if conf.is_local_env else uvloop).run(cls._run())
+        if not conf.is_local_env:
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+        event_loop = asyncio.new_event_loop()
+
+        try:
+            event_loop.create_task(cls._run())
+            event_loop.run_forever()
+        finally:
+            for task in asyncio.all_tasks(event_loop):
+                task.cancel()
+            event_loop.run_until_complete(LibsContainer.shutdown())
+            event_loop.stop()
+            event_loop.close()
 
     @classmethod
     async def background(cls) -> None:
         """Запуск воркера в фоне - внешний интерфейс."""
-        asyncio.create_task(cls._run())  # noqa
+        asyncio.get_event_loop().create_task(cls._run())  # noqa
