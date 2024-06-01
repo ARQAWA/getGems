@@ -1,50 +1,70 @@
-from app.core.dependnecies import ChCursor
+from datetime import datetime
+from decimal import Decimal
+from typing import Annotated
+
+from fast_depends import Depends
+
+from app.core.database.clickhouse import ChPool
+from app.core.schemas.get_gems_client import KindStr
 
 query_get_last_updated_date = """
-SELECT updated_at
+SELECT created_at
 FROM nft_collection_stat
 WHERE period = 'day'
-ORDER BY updated_at DESC
+ORDER BY created_at DESC
 LIMIT 1
 """
-
-#     address String,
-#     name String,
-#     period LowCardinality(String),
-#     place Int32,
-#     diff Decimal(18, 10),
-#     ton_value Decimal(18, 10),
-#     ton_floor_price Decimal(18, 10),
-#     usd_value Decimal(18, 10),
-#     usd_floor_price Decimal(18, 10),
-#     created_at DateTime DEFAULT now(),
-#     updated_at DateTime DEFAULT now()
 
 query_insert_stat_record = """
 INSERT INTO nft_collection_stat
 (address, name, period, place, diff, ton_value, ton_floor_price, usd_value, usd_floor_price)
+VALUES
+"""
+
+RecordsTuple = tuple[
+    tuple[
+        str,  # address
+        str,  # name
+        KindStr,  # period
+        int,  # place
+        Decimal | None,  # diff
+        Decimal,  # ton_value
+        Decimal,  # ton_floor_price
+        Decimal,  # usd_value
+        Decimal,  # usd_floor_price
+    ],
+    ...,
+]
 
 
-class NftCollectionStatsRepository:
+class NftCollectionStatsRepoOrigin:
     """Репозиторий для работы с данными статистики коллекций NFT."""
 
-    def __init__(self, ch_cursor: ChCursor) -> None:
-        self._ch_cursor = ch_cursor
+    def __init__(self, ch_pool: ChPool) -> None:
+        """Инициализация репозитория."""
+        self._ch_pool = ch_pool
 
-    def get_last_updated(self) -> int | None:
+    async def get_last_updated(self) -> datetime | None:
         """Получение времени последнего обновления статистики."""
-        self._ch_cursor.execute(query_get_last_updated_date)
-        res = self._ch_cursor.fetchone()
+        async with self._ch_pool.cursor() as cur:  # type: ChPool.Cursor
+            await cur.execute(query_get_last_updated_date)
+            res = await cur.fetchone()
         return res[0] if res else None
 
-    def insert_many_stat_records(self, records: list[tuple]) -> None:
+    async def insert_many_stat_records(self, records: RecordsTuple) -> None:
         """Вставка записей статистики."""
-        self._ch_cursor.executemany(
-            """
-            INSERT INTO nft_collection_stat_record
-            (collection_id, period, updated_at, data)
-            VALUES
-            (%s, %s, %s, %s)
-            """,
-            records,
-        )
+        if not records:
+            return
+
+        async with self._ch_pool.cursor() as cur:  # type: ChPool.Cursor
+            await cur.execute(query_insert_stat_record, records)
+
+
+NftCollectionStatsRepo = Annotated[
+    NftCollectionStatsRepoOrigin,
+    Depends(NftCollectionStatsRepoOrigin),
+]
+
+__all__ = [
+    "NftCollectionStatsRepo",
+]

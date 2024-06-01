@@ -1,8 +1,10 @@
 import asyncio
 import logging
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 
-from app.core.dependnecies import ChCursor, GetGemsClient
+from app.core.clients.getgems_io.client import GetGemsClient
+from app.core.repositories.nft_collection_stats import NftCollectionStatsRepo
 from app.core.schemas.get_gems_client import GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
 
@@ -21,18 +23,25 @@ class FirstParser(BaseAsyncWorker):
 
     def __init__(
         self,
-        ch_cursor: ChCursor,
         get_gems_client: GetGemsClient,
+        nft_collection_stats_repo: NftCollectionStatsRepo,
     ) -> None:
-        self._ch_cursor = ch_cursor
         self._get_gems_client = get_gems_client
+        self._nft_collection_stats_repo = nft_collection_stats_repo
 
     async def main(self) -> None:
         """Код воркеа."""
         while True:
-            await self._ch_cursor.execute("SELECT COUNT(address) FROM nft_collection")
-            print(await self._ch_cursor.fetchall())  # noqa
-            await asyncio.sleep(1)
+            res = await self._nft_collection_stats_repo.get_last_updated()
+
+            if res is None:
+                print("No data")  # noqa
+
+            else:
+                print(f"Last updated: {res}")  # noqa
+                next_hour = res.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                print(f"Next hour: {next_hour}, now: {datetime.now(UTC)}")  # noqa
+                await asyncio.sleep(1)
 
         for kind, cursor in self._cursors.items():
             data = await self._get_gems_client.get_top_collections(

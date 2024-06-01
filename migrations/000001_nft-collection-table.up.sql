@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS nft_collection
     is_verified Nullable(Bool),
     holders_count Int32,
     items_count Int32,
-    created_at DateTime DEFAULT now(),
-    updated_at DateTime DEFAULT now()
+    created_at DateTime64(6, 'UTC') DEFAULT now(),
+    updated_at DateTime64(6, 'UTC') DEFAULT now()
 )
 ENGINE = MergeTree()
 ORDER BY (address, updated_at);

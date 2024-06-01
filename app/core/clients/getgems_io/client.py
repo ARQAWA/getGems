@@ -1,15 +1,17 @@
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 import orjson
+from fast_depends import Depends
 
 from app.core.clients import BaseClient, Response
 from app.core.clients.getgems_io.constants import COLLECTIONS_EXTENSION_STR
 from app.core.clients.getgems_io.helpers.collections import get_processed_collections
+from app.core.helpers.asyncs import in_thread
 from app.core.models.nft_collections import NftCollectionsResponse
 from app.core.schemas.get_gems_client import GetTopCollsParams
 
 
-class GetGemsClient(BaseClient):
+class GetGemsClientOrigin(BaseClient):
     """Клиент сервиса getgems.io."""
 
     _base_url = "https://api.getgems.io"
@@ -30,11 +32,11 @@ class GetGemsClient(BaseClient):
 
         params = {
             "operationName": operation_name,
-            "variables": orjson.dumps(variables).decode(),
+            "variables": (await in_thread(orjson.dumps, variables)).decode(),
         }
 
         if isinstance(extensions, dict):
-            params["extensions"] = orjson.dumps(extensions).decode()
+            params["extensions"] = (await in_thread(orjson.dumps, extensions)).decode()
         elif isinstance(extensions, str):
             params["extensions"] = extensions
 
@@ -71,7 +73,7 @@ class GetGemsClient(BaseClient):
                 f'Failed to execute GraphQL request {{"code": {response.status_code}, "text": {response.text}}}'
             )
 
-        jres = orjson.loads(response.text)
+        jres = await in_thread(orjson.loads, response.text)
 
         if "errors" in jres:
             raise RuntimeError(f'Failed to get top collections {{"errors": {jres["errors"]}}}')
@@ -85,3 +87,9 @@ class GetGemsClient(BaseClient):
             collections=collections,
             cursor=jres["data"]["mainPageTopCollection"]["cursor"],
         )
+
+
+GetGemsClient = Annotated[GetGemsClientOrigin, Depends(GetGemsClientOrigin)]
+
+
+__all__ = ["GetGemsClient"]
