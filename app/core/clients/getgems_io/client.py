@@ -64,18 +64,18 @@ class GetGemsClientOrigin(BaseClient):
         )
 
         if response.status_code != 200:
-            raise ValueError("Unexpected response in get top collections", response.status_code, response.text)
+            raise RuntimeError("Unexpected response in get top collections", response.status_code, response.text)
 
         jres = orjson.loads(response.text)
 
         if not isinstance(jres, dict):
-            raise ValueError("Unexpected response in get top collections", jres)
+            raise RuntimeError("Unexpected response in get top collections", jres)
 
         if "errors" in jres:
-            raise ValueError("Failed to get top collections", jres["errors"])
+            raise RuntimeError("Failed to get top collections", jres["errors"])
 
         if jres.get("data", {}).get("mainPageTopCollection") is None:
-            raise ValueError("Unexpected response in get top collections", jres)
+            raise RuntimeError("Unexpected response in get top collections", jres)
 
         return {
             "items": jres["data"]["mainPageTopCollection"]["items"],

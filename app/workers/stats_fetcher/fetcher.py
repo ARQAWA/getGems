@@ -1,5 +1,7 @@
 import asyncio
 
+import sentry_sdk
+
 from app.core.clients.getgems_io.client import GetGemsClient
 from app.core.queues import QUEUE_FOR_FETCH
 from app.core.schemas.get_gems_client import FetchTopCollsRequest, GetTopCollsParams
@@ -24,9 +26,11 @@ class StatsFetcherFetcher(BaseAsyncWorker):
     async def main(self) -> None:
         """Код воркеа."""
         while True:
+            fetch_req = await QUEUE_FOR_FETCH.get()
             try:
-                await self._execute_pipeline(await QUEUE_FOR_FETCH.get())
+                await self._execute_pipeline(fetch_req)
             except RuntimeError as err:
+                sentry_sdk.capture_exception(err)
                 print(f"RuntimeError in StatsFetcherFetcher: {err}")  # noqa
                 self._errors_series += 1
                 if self._errors_series == 3:
