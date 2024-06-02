@@ -58,10 +58,10 @@ class TopCollStatItem(TypedDict):
 
     place: int
     tonValue: str
-    currencyValue: float
-    diffPercent: float
-    floorPrice: int
-    currencyFloorPrice: float
+    currencyValue: str
+    diffPercent: str | None
+    floorPrice: str
+    currencyFloorPrice: str
     collection: TopCollInfoItem
 
 
@@ -73,4 +73,11 @@ class ResponseTopColls(TypedDict):
     period: KindStr
 
 
-__all__ = ["GetTopCollsParams", "KindStr", "FetchTopCollsRequest", "ResponseTopColls"]
+__all__ = [
+    "GetTopCollsParams",
+    "KindStr",
+    "FetchTopCollsRequest",
+    "ResponseTopColls",
+    "TopCollStatItem",
+    "TopCollInfoItem",
+]

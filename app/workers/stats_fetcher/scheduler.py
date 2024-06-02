@@ -2,15 +2,17 @@ import asyncio
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
-from app.core.constants import TIME_HOUR, TIME_MINUTE
-from app.core.queues import QUEUE_FOR_FETCH
+from app.core.constants import TIME_MINUTE
+from app.core.queues import QUEUE_FOR_FETCH_COLLECTION
 from app.core.repositories.nft_collection_stats import NftCollectionStatsRepo
 from app.workers.base_worker import BaseAsyncWorker
 
 if TYPE_CHECKING:
     from app.core.schemas.get_gems_client import KindStr
 
-CONST_22_MINUTES = 22 * TIME_MINUTE
+CONST_HOUR_MINUTES = 60
+CONST_WAITER_MINUTES = 22
+CONST_WAITER_SECONDS = CONST_WAITER_MINUTES * TIME_MINUTE
 
 
 class StatsFetcherScheduler(BaseAsyncWorker):
@@ -26,7 +28,7 @@ class StatsFetcherScheduler(BaseAsyncWorker):
 
     async def startup(self) -> None:
         """Код, который выполняется при старте воркера."""
-        await self._sleep_on_startup()
+        # await self._sleep_on_startup()
 
     async def main(self) -> None:
         """Код воркеа."""
@@ -45,7 +47,7 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         kinds: tuple[KindStr, ...] = ("day", "week", "month", "all")
 
         for kind in kinds:
-            await QUEUE_FOR_FETCH.put((kind, 100, None))
+            await QUEUE_FOR_FETCH_COLLECTION.put((kind, 100, None))
 
         await asyncio.sleep(3)
 
@@ -69,8 +71,12 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         if last_updated is None or last_updated < now - timedelta(hours=1):
             last_updated = datetime.now(UTC) - timedelta(hours=1)
 
-        sleeper = (datetime.now(UTC) - last_updated).total_seconds() % TIME_HOUR
+        sleeper = (now - last_updated).total_seconds()
+        if sleeper > CONST_WAITER_SECONDS:
+            sleeper = (CONST_HOUR_MINUTES - now.minute) * TIME_MINUTE + now.second
 
-        if sleeper < CONST_22_MINUTES:
-            print(f"StatsFetcherScheduler: start in {sleeper} seconds")  # noqa
+        if sleeper < CONST_WAITER_SECONDS:
+            print(  # noqa
+                f"StatsFetcherScheduler: start in " f"{sleeper // TIME_MINUTE:02d}:{sleeper % TIME_MINUTE:02d}"
+            )
             await asyncio.sleep(sleeper)

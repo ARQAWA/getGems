@@ -1,11 +1,13 @@
 import asyncio
+from typing import cast
 
 import sentry_sdk
 
 from app.core.clients.getgems_io.client import GetGemsClient
-from app.core.queues import QUEUE_FOR_FETCH
+from app.core.queues import QUEUE_FOR_CH_INSERT_COLL_INFO, QUEUE_FOR_CH_INSERT_COLL_STAT, QUEUE_FOR_FETCH_COLLECTION
 from app.core.schemas.get_gems_client import FetchTopCollsRequest, GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
+from app.workers.stats_fetcher.helpers.refactor_top_colls import refactor_top_colls_answer
 
 
 class StatsFetcherFetcher(BaseAsyncWorker):
@@ -26,7 +28,7 @@ class StatsFetcherFetcher(BaseAsyncWorker):
     async def main(self) -> None:
         """Код воркеа."""
         while True:
-            fetch_req = await QUEUE_FOR_FETCH.get()
+            fetch_req = await QUEUE_FOR_FETCH_COLLECTION.get()
             try:
                 await self._execute_pipeline(fetch_req)
             except RuntimeError as err:
@@ -49,8 +51,17 @@ class StatsFetcherFetcher(BaseAsyncWorker):
             GetTopCollsParams.from_fetch_request(fetch_req),
         )
 
-        printer = (res["cursor"], len(res["items"]), res["period"])
+        if res["cursor"] is not None:
+            await QUEUE_FOR_FETCH_COLLECTION.put((fetch_req[0], fetch_req[1], cast(int, res["cursor"])))
 
-        print(f"Got response from GetGems: {printer}")  # noqa
-        # if res["cursor"] is not None:
-        #     await QUEUE_FOR_FETCH.put((fetch_req[0], fetch_req[1], res["cursor"]))
+        ch_ready = await refactor_top_colls_answer(res)
+
+        if res["period"] == "all":
+            for stat, info in ch_ready:
+                await asyncio.gather(
+                    QUEUE_FOR_CH_INSERT_COLL_STAT.put(stat),
+                    QUEUE_FOR_CH_INSERT_COLL_INFO.put(info),
+                )
+        else:
+            for stat, _ in ch_ready:
+                await QUEUE_FOR_CH_INSERT_COLL_STAT.put(stat)
