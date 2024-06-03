@@ -4,6 +4,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
+    apt-get install -y netcat && \
     pip install -U pip
 
 WORKDIR /app
