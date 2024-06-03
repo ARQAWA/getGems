@@ -4,9 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Never, TypeVar
 
 import sentry_sdk
-
-__all__ = ["BaseAsyncWorker", "TAsyncWorker"]
-
 import uvloop
 from fast_depends import Depends, inject
 
@@ -82,3 +79,6 @@ class BaseAsyncWorker(ABC):
     def background(cls, event_loop: asyncio.AbstractEventLoop) -> None:
         """Запуск воркера в фоне - внешний интерфейс."""
         event_loop.create_task(cls._run())  # noqa
+
+
+__all__ = ["BaseAsyncWorker", "TAsyncWorker"]
