@@ -8,3 +8,7 @@ services:
     env_file:
       - .env
     command: python3 manage.py run-stats-fetcher
+
+networks:
+  my_super_network:
+    external: true
