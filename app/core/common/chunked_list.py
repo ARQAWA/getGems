@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generator, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -32,6 +32,11 @@ class Chunk(list[T], Generic[T]):
     def __len__(self) -> int:
         """Получение длинны чанка."""
         return self._chunk_size
+
+    def __iter__(self) -> Generator[T, None, None]:
+        """Итерация по чанку."""
+        for idx in range(self._chunk_size):
+            yield self[idx]
 
     def pop(self, __index: int = -1):  # type: ignore # noqa
         """Удаление элемента из чанка."""
