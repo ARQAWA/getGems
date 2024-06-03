@@ -35,10 +35,10 @@ class StatsFetcherWriterCh(BaseAsyncWorker):
     async def _write_stats(self) -> int:
         """Запись статистики в ClickHouse."""
         stats = await QUEUE_FOR_CH_INSERT_COLL_STAT.get()
-        if len_ := len(stats):
-            await self._nft_collection_stats_repo.insert_many_stat_records(list(stats[i] for i in range(len_)))
+        if len(stats):
+            await self._nft_collection_stats_repo.insert_many_stat_records(stats)
             asyncio.get_event_loop().run_in_executor(
-                THREAD_XQTR, print, f"Записано {len_} записей в таблицу nft_collections_stats."
+                THREAD_XQTR, print, f"Записано {len(stats)} записей в таблицу nft_collections_stats."
             )
 
         return len(QUEUE_FOR_CH_INSERT_COLL_STAT)
@@ -46,10 +46,10 @@ class StatsFetcherWriterCh(BaseAsyncWorker):
     async def _write_info(self) -> int:
         """Запись информации о коллекциях в ClickHouse."""
         info = await QUEUE_FOR_CH_INSERT_COLL_INFO.get()
-        if len_ := len(info):
-            await self._nft_collection_info_repo.insert_many_info_records(list(info[i] for i in range(len_)))
+        if len(info):
+            await self._nft_collection_info_repo.insert_many_info_records(info)
             asyncio.get_event_loop().run_in_executor(
-                THREAD_XQTR, print, f"Записано {len_} записей в таблицу nft_collections_info."
+                THREAD_XQTR, print, f"Записано {len(info)} записей в таблицу nft_collections_info."
             )
 
         return len(QUEUE_FOR_CH_INSERT_COLL_INFO)
