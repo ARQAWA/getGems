@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 
 import asynch
+import sentry_sdk
 from asynch.connection import Connection  # noqa
 from asynch.cursors import Cursor as CursorOrigin
 from asynch.pool import Pool as PoolOrigin
@@ -50,7 +51,11 @@ class Pool:
         """Контекстный менеджер для работы с курсором."""
         async with self._pool.acquire() as conn:  # type: Connection # noqa
             async with conn.cursor() as cursor:
-                yield cursor
+                try:
+                    yield cursor
+                except Exception as err:
+                    sentry_sdk.capture_exception(err)
+                    raise
 
 
 class ClickhousePool(ObjectCapsule[Pool]):
