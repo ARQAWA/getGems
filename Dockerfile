@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install -y netcat && \
+    apt-get install -y netcat-openbsd && \
     pip install -U pip
 
 WORKDIR /app
