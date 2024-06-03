@@ -1,0 +1,4 @@
+COLLECTIONS_EXTENSION_STR = (
+    "%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%227"
+    "ad7862e974e6b7b96ca883585fca3a86f64ebf4cf00bec9c2f03a8367dfef75%22%7D%7D"
+)
