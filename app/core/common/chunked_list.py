@@ -33,6 +33,11 @@ class Chunk(list[T], Generic[T]):
         """Получение длинны чанка."""
         return self._chunk_size
 
+    def __iter__(self):
+        """Итерация по чанку."""
+        for idx in range(self._chunk_size):
+            yield self[idx]
+
     def pop(self, __index: int = -1):  # type: ignore # noqa
         """Удаление элемента из чанка."""
         raise RuntimeError("You can't pop from chunk")
