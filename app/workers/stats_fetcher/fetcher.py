@@ -4,6 +4,7 @@ from typing import cast
 import sentry_sdk
 
 from app.core.clients.getgems_io.client import GetGemsClient
+from app.core.executors import THREAD_XQTR
 from app.core.queues import QUEUE_FOR_CH_INSERT_COLL_INFO, QUEUE_FOR_CH_INSERT_COLL_STAT, QUEUE_FOR_FETCH_COLLECTION
 from app.core.schemas.get_gems_client import FetchTopCollsRequest, GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
@@ -17,10 +18,9 @@ class StatsFetcherFetcher(BaseAsyncWorker):
         self,
         get_gems_client: GetGemsClient,
     ) -> None:
+        super().__init__()
+        self._errors_series = 0
         self._get_gems_client = get_gems_client
-
-    _cycle_sleeper = 0
-    _errors_series = 0
 
     async def startup(self) -> None:
         """Код, который выполняется при старте воркера."""
@@ -33,7 +33,11 @@ class StatsFetcherFetcher(BaseAsyncWorker):
                 await self._execute_pipeline(fetch_req)
             except RuntimeError as err:
                 sentry_sdk.capture_exception(err)
-                print(f"RuntimeError in StatsFetcherFetcher: {err}")  # noqa
+                asyncio.get_event_loop().run_in_executor(
+                    THREAD_XQTR,
+                    print,
+                    f"RuntimeError in StatsFetcherFetcher: {err}",
+                )
                 self._errors_series += 1
                 if self._errors_series == 3:
                     await asyncio.sleep(20)
@@ -49,6 +53,12 @@ class StatsFetcherFetcher(BaseAsyncWorker):
         """
         res = await self._get_gems_client.get_top_collections(
             GetTopCollsParams.from_fetch_request(fetch_req),
+        )
+
+        asyncio.get_event_loop().run_in_executor(
+            THREAD_XQTR,
+            print,
+            f"StatsFetcherFetcher: {res["cursor"]}/{res["period"]}/items:{len(res["items"])}",
         )
 
         if res["cursor"] is not None:

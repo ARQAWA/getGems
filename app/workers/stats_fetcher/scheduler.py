@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from app.core.constants import TIME_MINUTE
+from app.core.executors import THREAD_XQTR
 from app.core.queues import QUEUE_FOR_FETCH_COLLECTION
-from app.core.repositories.nft_collection_stats import NftCollectionStatsRepo
 from app.workers.base_worker import BaseAsyncWorker
 
 if TYPE_CHECKING:
@@ -18,17 +18,11 @@ CONST_WAITER_SECONDS = CONST_WAITER_MINUTES * TIME_MINUTE
 class StatsFetcherScheduler(BaseAsyncWorker):
     """Класс для планирования работы воркера StatsFetcher."""
 
-    def __init__(
-        self,
-        nft_collection_stats_repo: NftCollectionStatsRepo,
-    ) -> None:
-        self._nft_collection_stats_repo = nft_collection_stats_repo
-
     _cycle_sleeper = 0
 
     async def startup(self) -> None:
         """Код, который выполняется при старте воркера."""
-        # await self._sleep_on_startup()
+        await self._sleep_on_startup()
 
     async def main(self) -> None:
         """Код воркеа."""
@@ -56,27 +50,28 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         """Спать до следующего часа."""
         now = datetime.now(UTC)
         next_hour = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+        if (sleeper := int((next_hour - now).total_seconds()) + 1) > 0:
+            asyncio.get_event_loop().run_in_executor(
+                THREAD_XQTR,
+                print,
+                f"StatsFetcherScheduler: next round in " f"{sleeper // TIME_MINUTE:02d}:{sleeper % TIME_MINUTE:02d}",
+            )
+            await asyncio.sleep(sleeper)
 
-        await asyncio.sleep((next_hour - now).total_seconds())
-
-    async def _sleep_on_startup(self) -> None:
+    @staticmethod
+    async def _sleep_on_startup() -> None:
         """
         Досыпаем до следующего часа, чтобы начать работу в начале часа.
 
         Если воркер запущен в начале часа, то он начнет работу сразу.
         """
         now = datetime.now(UTC)
-        last_updated = await self._nft_collection_stats_repo.get_last_updated()
 
-        if last_updated is None or last_updated < now - timedelta(hours=1):
-            last_updated = datetime.now(UTC) - timedelta(hours=1)
-
-        sleeper = (now - last_updated).total_seconds()
-        if sleeper > CONST_WAITER_SECONDS:
-            sleeper = (CONST_HOUR_MINUTES - now.minute) * TIME_MINUTE + now.second
-
+        sleeper = (CONST_HOUR_MINUTES - now.minute) * TIME_MINUTE + now.second
         if sleeper < CONST_WAITER_SECONDS:
-            print(  # noqa
-                f"StatsFetcherScheduler: start in " f"{sleeper // TIME_MINUTE:02d}:{sleeper % TIME_MINUTE:02d}"
+            asyncio.get_event_loop().run_in_executor(
+                THREAD_XQTR,
+                print,
+                f"StatsFetcherScheduler: start in " f"{sleeper // TIME_MINUTE:02d}:{sleeper % TIME_MINUTE:02d}",
             )
             await asyncio.sleep(sleeper)

@@ -58,10 +58,10 @@ class TopCollStatItem(TypedDict):
 
     place: int
     tonValue: str
-    currencyValue: str
-    diffPercent: str | None
-    floorPrice: str
-    currencyFloorPrice: str
+    currencyValue: float
+    diffPercent: float | None
+    floorPrice: float
+    currencyFloorPrice: float
     collection: TopCollInfoItem
 
 

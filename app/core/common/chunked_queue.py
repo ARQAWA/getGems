@@ -1,4 +1,5 @@
-from asyncio import Lock, Queue
+from asyncio import Lock
+from collections import deque
 from typing import Generic, TypeVar
 
 from app.core.common.chunked_list import Chunk
@@ -14,13 +15,13 @@ class ChunkedQueue(Generic[T]):
         self._lock = Lock()
         self._chunk_size = chunk_size
 
-        self._queue: Queue[Chunk[T]] = Queue()
+        self._deque: deque[Chunk[T]] = deque()
         self._current_chunk: Chunk[T] = self.__create_new_chunk()
 
     def __create_new_chunk(self) -> Chunk[T]:
         """Создание нового чанка."""
         chunk: Chunk[T] = Chunk(self._chunk_size)
-        self._queue.put_nowait(chunk)
+        self._deque.append(chunk)
         return chunk
 
     async def put(self, item: T) -> None:
@@ -34,7 +35,12 @@ class ChunkedQueue(Generic[T]):
     async def get(self) -> Chunk[T]:
         """Получение чанка."""
         async with self._lock:
-            current_chunk = self._current_chunk
-            self._current_chunk = self.__create_new_chunk()
+            first_chunk = self._deque.popleft()
+            if not self._deque:
+                self._current_chunk = self.__create_new_chunk()
 
-        return current_chunk
+        return first_chunk
+
+    def __len__(self) -> int:
+        """Получение количества элементов в очереди."""
+        return (len(self._deque) - 1) * self._chunk_size + len(self._current_chunk)

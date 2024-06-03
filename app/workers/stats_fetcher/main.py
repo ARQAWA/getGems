@@ -4,6 +4,7 @@ import logging
 from app.workers.base_worker import BaseAsyncWorker
 from app.workers.stats_fetcher.fetcher import StatsFetcherFetcher
 from app.workers.stats_fetcher.scheduler import StatsFetcherScheduler
+from app.workers.stats_fetcher.writer_ch import StatsFetcherWriterCh
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,8 @@ class StatsFetcherMain(BaseAsyncWorker):
         2. Запускаем воркер плаанировщик.
         """
         event_loop = asyncio.get_event_loop()
+
+        StatsFetcherWriterCh.background(event_loop)
 
         for _ in range(10):
             StatsFetcherFetcher.background(event_loop)

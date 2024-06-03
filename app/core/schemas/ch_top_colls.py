@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from app.core.schemas.get_gems_client import KindStr
 
 TopCollInfoItemCH = tuple[
@@ -14,11 +16,11 @@ TopCollStatItemCH = tuple[
     str,  # name
     KindStr,  # period
     int,  # place
-    str | None,  # diff
+    Decimal | None,  # diff
     str,  # tonValue
-    str,  # tonFloorPrice
-    str,  # currencyValue
-    str,  # currencyFloorPrice
+    Decimal,  # tonFloorPrice
+    Decimal,  # currencyValue
+    Decimal,  # currencyFloorPrice
 ]
 
 TopCollChunkCH = tuple[

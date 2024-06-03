@@ -1,11 +1,10 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Annotated
 
 from fast_depends import Depends
 
 from app.core.database.clickhouse import ChPool
-from app.core.schemas.get_gems_client import KindStr
+from app.core.schemas.ch_top_colls import TopCollStatItemCH
 
 query_get_last_updated_date = """
 SELECT created_at
@@ -21,20 +20,7 @@ INSERT INTO nft_collection_stat
 VALUES
 """
 
-RecordsTuple = tuple[
-    tuple[
-        str,  # address
-        str,  # name
-        KindStr,  # period
-        int,  # place
-        Decimal | None,  # diff
-        Decimal,  # ton_value
-        Decimal,  # ton_floor_price
-        Decimal,  # usd_value
-        Decimal,  # usd_floor_price
-    ],
-    ...,
-]
+StatRecords = list[TopCollStatItemCH]
 
 
 class NftCollectionStatsRepoOrigin:
@@ -51,9 +37,9 @@ class NftCollectionStatsRepoOrigin:
             res = await cur.fetchone()
         return res[0] if res else None
 
-    async def insert_many_stat_records(self, records: RecordsTuple) -> None:
+    async def insert_many_stat_records(self, records: StatRecords) -> None:
         """Вставка записей статистики."""
-        if not records:
+        if not len(records):
             return
 
         async with self._ch_pool.cursor() as cur:  # type: ChPool.Cursor
