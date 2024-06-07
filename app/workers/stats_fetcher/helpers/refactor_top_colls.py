@@ -2,9 +2,9 @@ import asyncio
 from decimal import Decimal
 from functools import partial
 
+from app.core.clients.getgems_io.schemas import KindStr, ResponseTopColls, TopCollStatItem
+from app.core.database.clickhouse.schemas.collections import TopCollChunkCH, TopCollInfoItemCH, TopCollStatItemCH
 from app.core.executors import PROCESS_XQTR
-from app.core.schemas.ch_top_colls import TopCollChunkCH, TopCollInfoItemCH, TopCollStatItemCH
-from app.core.schemas.get_gems_client import KindStr, ResponseTopColls, TopCollStatItem
 
 
 async def refactor_top_colls_answer(

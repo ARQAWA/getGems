@@ -5,7 +5,7 @@ from fast_depends import Depends
 
 from app.core.clients import BaseClient, Response
 from app.core.clients.getgems_io.constants import COLLECTIONS_EXTENSION_STR
-from app.core.schemas.get_gems_client import GetTopCollsParams, ResponseTopColls
+from app.core.clients.getgems_io.schemas import GetTopCollsParams, ResponseTopColls
 
 
 class GetGemsClientOrigin(BaseClient):

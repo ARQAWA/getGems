@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from app.core.schemas.get_gems_client import KindStr
+from app.core.clients.getgems_io.schemas import KindStr
 
 TopCollInfoItemCH = tuple[
     str,  # address

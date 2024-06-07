@@ -1,14 +1,11 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
+from app.core.clients.getgems_io.schemas import KindStr
 from app.core.constants import TIME_MINUTE
 from app.core.executors import THREAD_XQTR
 from app.core.queues import QUEUE_FOR_FETCH_COLLECTION
 from app.workers.base_worker import BaseAsyncWorker
-
-if TYPE_CHECKING:
-    from app.core.schemas.get_gems_client import KindStr
 
 CONST_HOUR_MINUTES = 60
 CONST_WAITER_MINUTES = 22
@@ -19,6 +16,7 @@ class StatsFetcherScheduler(BaseAsyncWorker):
     """Класс для планирования работы воркера StatsFetcher."""
 
     _cycle_sleeper = 0
+    _kinds: tuple[KindStr, ...] = ("day", "week", "month", "all")
 
     async def startup(self) -> None:
         """Код, который выполняется при старте воркера."""
@@ -29,8 +27,7 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         await self._execute_pipeline()
         await self._sleep_until_next_hour()
 
-    @staticmethod
-    async def _execute_pipeline() -> None:
+    async def _execute_pipeline(self) -> None:
         """
         Выполнить пайплайн.
 
@@ -38,9 +35,7 @@ class StatsFetcherScheduler(BaseAsyncWorker):
         2. Отправляем их в очередь
         3. Спим 5 секунд для того, чтобы все задачи начали выполняться
         """
-        kinds: tuple[KindStr, ...] = ("day", "week", "month", "all")
-
-        for kind in kinds:
+        for kind in self._kinds:
             await QUEUE_FOR_FETCH_COLLECTION.put((kind, 100, None))
 
         await asyncio.sleep(3)
