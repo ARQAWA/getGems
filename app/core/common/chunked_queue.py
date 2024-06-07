@@ -1,21 +1,24 @@
 from asyncio import Lock
+from collections import deque
 from typing import Generic, TypeVar
 
 from app.core.common.chunked_list import Chunk
-from app.core.common.recovery_deque import RecoveryDeque
+from app.core.common.retryable import Retryable
+from app.core.helpers.retries import helper__item_can_retry
 
 T = TypeVar("T")
 
 
-class ChunkedQueue(Generic[T]):
+class ChunkedQueue(Generic[T], Retryable):
     """Класс для хранения чанков данных."""
 
     def __init__(self, chunk_size: int, *, max_tries: int) -> None:
         """Конструктор класса."""
-        self._lock = Lock()
         self._chunk_size = chunk_size
+        self._max_tries = max_tries
+        self._lock = Lock()
 
-        self._deque: RecoveryDeque[Chunk[T]] = RecoveryDeque(max_tries=max_tries)
+        self._deque: deque[Chunk[T]] = deque()
         self._current_chunk: Chunk[T] = self.__create_new_chunk()
 
     def __create_new_chunk(self) -> Chunk[T]:
@@ -44,7 +47,8 @@ class ChunkedQueue(Generic[T]):
     async def park_chunk_front(self, chunk: Chunk[T]) -> None:
         """Парковка чанка в начало."""
         async with self._lock:
-            self._deque.appendleft(chunk)
+            if helper__item_can_retry(self, chunk):
+                self._deque.appendleft(chunk)
 
     def __len__(self) -> int:
         """Получение количества элементов в очереди."""

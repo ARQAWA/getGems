@@ -3,19 +3,12 @@ from contextlib import suppress
 
 import click
 
-from app.main import FirstParser
-from app.workers.stats_fetcher.main import StatsFetcherMain
+from app.main import StatsFetcherMain
 
 
 @click.group()
 def cli() -> None:
     """Управление приложением."""
-
-
-@click.command(name="run-first-parser", help="Запуск парсера")
-def run_first_parser() -> None:
-    """Запуск парсера."""
-    FirstParser.bootstrap()
 
 
 @click.command(name="run-stats-fetcher", help="Запуск сборщика статистики")
@@ -26,10 +19,7 @@ def run_stats_fetcher() -> None:
 
 def __main_run() -> None:
     """Запуск приложения."""
-    for cmd in (
-        run_first_parser,
-        run_stats_fetcher,
-    ):
+    for cmd in (run_stats_fetcher,):
         cli.add_command(cmd)
 
     cli()
