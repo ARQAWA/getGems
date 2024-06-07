@@ -4,7 +4,7 @@ from typing import Annotated
 from fast_depends import Depends
 
 from app.core.database.clickhouse import ChPool
-from app.core.schemas.ch_top_colls import TopCollStatItemCH
+from app.core.database.clickhouse.schemas.collections import TopCollStatItemCH
 
 query_get_last_updated_date = """
 SELECT created_at

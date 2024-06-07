@@ -27,13 +27,6 @@ class ObjectCapsule(Generic[TLib], NotInstantiated):
     _instance: TLib | None = None
     _type_capsule: TypeCapsule[TLib] | None = None
 
-    @classmethod
-    def type_capsule(cls) -> TypeCapsule[TLib]:
-        """Капсула типа."""
-        if cls._type_capsule is not None:
-            return cls._type_capsule
-        raise ValueError("Type capsule is not set.")
-
     @staticmethod
     @abstractmethod
     def _init() -> TLib:

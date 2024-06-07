@@ -4,9 +4,9 @@ from typing import cast
 import sentry_sdk
 
 from app.core.clients.getgems_io.client import GetGemsClient
+from app.core.clients.getgems_io.schemas import FetchTopCollsRequest, GetTopCollsParams
 from app.core.executors import THREAD_XQTR
 from app.core.queues import QUEUE_FOR_CH_INSERT_COLL_INFO, QUEUE_FOR_CH_INSERT_COLL_STAT, QUEUE_FOR_FETCH_COLLECTION
-from app.core.schemas.get_gems_client import FetchTopCollsRequest, GetTopCollsParams
 from app.workers.base_worker import BaseAsyncWorker
 from app.workers.stats_fetcher.helpers.refactor_top_colls import refactor_top_colls_answer
 

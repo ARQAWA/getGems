@@ -3,7 +3,7 @@ from typing import Annotated
 from fast_depends import Depends
 
 from app.core.database.clickhouse import ChPool
-from app.core.schemas.ch_top_colls import TopCollInfoItemCH
+from app.core.database.clickhouse.schemas.collections import TopCollInfoItemCH
 
 query_insert_info_record = """
 INSERT INTO nft_collection

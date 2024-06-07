@@ -34,6 +34,9 @@ mypy:
 
 linters: ruff-format ruff-check mypy
 
+vult:
+	@vulture app
+
 include .env
 MIGRATIONS_DIR=./migrations
 
