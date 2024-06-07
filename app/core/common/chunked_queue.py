@@ -1,11 +1,8 @@
 from asyncio import Lock
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from app.core.common.chunked_list import Chunk
 from app.core.common.recovery_deque import RecoveryDeque
-
-if TYPE_CHECKING:
-    from collections import deque
 
 T = TypeVar("T")
 
@@ -18,7 +15,7 @@ class ChunkedQueue(Generic[T]):
         self._lock = Lock()
         self._chunk_size = chunk_size
 
-        self._deque: deque[Chunk[T]] = RecoveryDeque(max_tries=max_tries)
+        self._deque: RecoveryDeque[Chunk[T]] = RecoveryDeque(max_tries=max_tries)
         self._current_chunk: Chunk[T] = self.__create_new_chunk()
 
     def __create_new_chunk(self) -> Chunk[T]:
@@ -51,4 +48,4 @@ class ChunkedQueue(Generic[T]):
 
     def __len__(self) -> int:
         """Получение количества элементов в очереди."""
-        return (len(self._deque) - 1) * self._chunk_size + len(self._current_chunk)
+        return (len(self._deque) - 1) * self._chunk_size + len(self._current_chunk)  # noqa
