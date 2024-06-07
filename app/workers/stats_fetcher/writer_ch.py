@@ -1,6 +1,6 @@
 import asyncio
 
-from app.core.executors import THREAD_XQTR
+from app.core.logger import logger
 from app.core.queues import QUEUE_FOR_CH_INSERT_COLL_INFO, QUEUE_FOR_CH_INSERT_COLL_STAT
 from app.core.repositories.nft_collection_stats import NftCollectionStatsRepo
 from app.core.repositories.nft_collections import NftCollectionInfoRepo
@@ -35,21 +35,25 @@ class StatsFetcherWriterCh(BaseAsyncWorker):
     async def _write_stats(self) -> int:
         """Запись статистики в ClickHouse."""
         stats = await QUEUE_FOR_CH_INSERT_COLL_STAT.get()
-        if len(stats):
-            await self._nft_collection_stats_repo.insert_many_stat_records(stats)
-            asyncio.get_event_loop().run_in_executor(
-                THREAD_XQTR, print, f"Записано {len(stats)} записей в таблицу nft_collections_stats."
-            )
+        try:
+            if len(stats):
+                await self._nft_collection_stats_repo.insert_many_stat_records(stats)
+                await logger.info(f"Записано {len(stats)} записей в таблицу nft_collections_stats.")
 
-        return len(QUEUE_FOR_CH_INSERT_COLL_STAT)
+            return len(QUEUE_FOR_CH_INSERT_COLL_STAT)
+        except Exception as err:
+            await QUEUE_FOR_CH_INSERT_COLL_STAT.park_chunk_front(stats)
+            raise err
 
     async def _write_info(self) -> int:
         """Запись информации о коллекциях в ClickHouse."""
         info = await QUEUE_FOR_CH_INSERT_COLL_INFO.get()
-        if len(info):
-            await self._nft_collection_info_repo.insert_many_info_records(info)
-            asyncio.get_event_loop().run_in_executor(
-                THREAD_XQTR, print, f"Записано {len(info)} записей в таблицу nft_collections_info."
-            )
+        try:
+            if len(info):
+                await self._nft_collection_info_repo.insert_many_info_records(info)
+                await logger.info(f"Записано {len(info)} записей в таблицу nft_collections_info.")
 
-        return len(QUEUE_FOR_CH_INSERT_COLL_INFO)
+            return len(QUEUE_FOR_CH_INSERT_COLL_INFO)
+        except Exception as err:
+            await QUEUE_FOR_CH_INSERT_COLL_INFO.park_chunk_front(info)
+            raise err

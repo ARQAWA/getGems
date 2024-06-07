@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from abc import ABC, abstractmethod
 from typing import Any, Never, TypeVar
 
@@ -9,9 +8,9 @@ from fast_depends import Depends, inject
 
 # noinspection PyProtectedMember
 from app.core._libs import LibsContainer
+from app.core.logger import logger
 from app.core.settings import conf
 
-LOGGER = logging.getLogger(__name__)
 INJECT_LOCK = asyncio.Lock()
 TAsyncWorker = TypeVar("TAsyncWorker", bound="BaseAsyncWorker")
 
@@ -40,7 +39,7 @@ class BaseAsyncWorker(ABC):
                 if self._cycle_sleeper > 0:
                     await asyncio.sleep(self._cycle_sleeper)
             except Exception as exc:
-                LOGGER.error(f"Failed to run worker!\n{repr(exc)}\nRestarting in 30 seconds...")
+                await logger.error(f"Failed to run worker!\n{repr(exc)}\nRestarting in 30 seconds...")
                 sentry_sdk.capture_exception(exc)
                 await asyncio.sleep(30)
 
